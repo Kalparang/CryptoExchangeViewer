@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoExchangeViewer", "CryptoExchangeViewer\CryptoExchangeViewer.csproj", "{53E7D5D5-9800-4D25-A2DF-E83879C326C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoTicker", "CryptoTicker\CryptoTicker.csproj", "{46CBFC70-DC5F-45EC-81A9-6F73B3E3E12C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DBHelper", "DBHelper\DBHelper.csproj", "{B0B37DAB-825C-4901-9A92-C731AF8ED434}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53E7D5D5-9800-4D25-A2DF-E83879C326C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53E7D5D5-9800-4D25-A2DF-E83879C326C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53E7D5D5-9800-4D25-A2DF-E83879C326C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53E7D5D5-9800-4D25-A2DF-E83879C326C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46CBFC70-DC5F-45EC-81A9-6F73B3E3E12C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46CBFC70-DC5F-45EC-81A9-6F73B3E3E12C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46CBFC70-DC5F-45EC-81A9-6F73B3E3E12C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46CBFC70-DC5F-45EC-81A9-6F73B3E3E12C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0B37DAB-825C-4901-9A92-C731AF8ED434}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0B37DAB-825C-4901-9A92-C731AF8ED434}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0B37DAB-825C-4901-9A92-C731AF8ED434}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0B37DAB-825C-4901-9A92-C731AF8ED434}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0EC02544-EB28-4E13-A086-1430AEFA4F05}
+	EndGlobalSection
+EndGlobal
