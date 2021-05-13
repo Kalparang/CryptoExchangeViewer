@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace CryptoTicker.Model
 {
@@ -125,6 +126,23 @@ namespace CryptoTicker.Model
                 tradePrice = value;
             }
         }
+    }
 
+    public class CurrencyExchangeModel
+    {
+        public CurrencyExchangeModel(string Target, string Stand, double Price, double High, double Low)
+        {
+            this.Target = Target;
+            this.Stand = Stand;
+            this.Price = Price;
+            this.High = High;
+            this.Low = Low;
+        }
+
+        public string Target;
+        public string Stand;
+        public double Price;
+        public double High;
+        public double Low;
     }
 }

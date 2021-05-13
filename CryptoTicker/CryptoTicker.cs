@@ -21,14 +21,16 @@ using BitFlyer.Apis;
 using Bittrex.Net;
 using Bittrex.Net.Objects;
 using Bittrex.Net.Sockets;
+using CryptoExchange.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace CryptoTicker
 {
-    class Korbit
+    public class Korbit
     {
         private WebSocket ws;
 
-        Dictionary<string, Dictionary<string, string>> GetAllSymbols()
+        public Dictionary<string, Dictionary<string, string>> GetAllSymbols()
         {
             Dictionary<string, Dictionary<string, string>> result = null;
 
@@ -97,54 +99,55 @@ namespace CryptoTicker
             return result;
         }
 
-        void Socket(Action<dynamic> func)
+        public void Socket(Action<dynamic> func)
         {
-            bool result = false;
-
             ws = new WebSocket("wss://ws.korbit.co.kr/v1/user/push");
-
-            ws.OnOpen += (sender, e) =>
             {
-                var t = ws.ReadyState.ToString();
-                KorbitModel.WebSocketRequest korbit = new KorbitModel.WebSocketRequest();
-                korbit.accessToken = null;
-                korbit.timestamp = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).Ticks;
-                korbit.@event = "korbit:subscribe";
-                korbit.data = new KorbitModel.WebSocketData();
-                korbit.data.channels = new List<string>();
-                korbit.data.channels.Add("ticker:btc_krw,eth_krw");
-
-                string js = JsonConvert.SerializeObject(korbit);
-                ws.Send(js);
-            };
-
-            ws.OnClose += (sender, e) =>
-            {
-                var t = e.Code;
-            };
-
-            ws.OnMessage += (sender, e) =>
-            {
-                var t = e.Data;
-
-                dynamic Tickers = JsonConvert.DeserializeObject<dynamic>(e.Data);
-                if (Tickers["event"] == "korbit:push-ticker")
+                ws.OnOpen += (sender, e) =>
                 {
-                    func(Tickers);
-                    var timestamp = Tickers["timestamp"];
-                    var symbol = Tickers["data"]["currency_pair"];    //***_&&&
-                        var price = long.Parse(((string)Tickers["data"]["last"]).Trim('{').Trim('}'));
-                }
-            };
+                    var t = ws.ReadyState.ToString();
+                    KorbitModel.WebSocketRequest korbit = new KorbitModel.WebSocketRequest();
+                    korbit.accessToken = null;
+                    korbit.timestamp = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).Ticks;
+                    korbit.@event = "korbit:subscribe";
+                    korbit.data = new KorbitModel.WebSocketData();
+                    korbit.data.channels = new List<string>();
+                    korbit.data.channels.Add("ticker:btc_krw,eth_krw");
 
-            ws.SslConfiguration.EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12;
-            ws.Connect();
+                    string js = JsonConvert.SerializeObject(korbit);
+                    ws.Send(js);
+                };
+
+                ws.OnClose += (sender, e) =>
+                {
+                    var t = e.Code;
+                };
+
+                ws.OnMessage += (sender, e) =>
+                {
+                    var t = e.Data;
+
+                    dynamic Tickers = JsonConvert.DeserializeObject<dynamic>(e.Data);
+                    if (Tickers["event"] == "korbit:push-ticker")
+                    {
+                        func(Tickers);
+                        var timestamp = Tickers["timestamp"];
+                        var symbol = Tickers["data"]["currency_pair"];    //***_&&&
+                        var price = long.Parse(((string)Tickers["data"]["last"]).Trim('{').Trim('}'));
+                    }
+                };
+
+                ws.SslConfiguration.EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12;
+                ws.Connect();
+            }
         }
     }
 
-    class Huobi
+    public class Huobi
     {
-        WebCallResult<HuobiSymbolTicks> GetAllSymbols()
+        HuobiSocketClient socketClient = null;
+
+        public WebCallResult<HuobiSymbolTicks> GetAllSymbols()
         {
             WebCallResult<HuobiSymbolTicks> marketDetails = null;
 
@@ -156,16 +159,18 @@ namespace CryptoTicker
             return marketDetails;
         }
 
-        void Socket(Action<HuobiSymbolDatas> func)
+        public void Socket(Action<HuobiSymbolDatas> func)
         {
-            var socketClient = new HuobiSocketClient();
+            socketClient = new HuobiSocketClient();
             socketClient.SubscribeToTickerUpdates(func);
         }
     }
 
-    class Kukoin
+    public class Kukoin
     {
-        WebCallResult<KucoinTicks> GetAllSymbols()
+        KucoinSocketClient socketClient = null;
+
+        public WebCallResult<KucoinTicks> GetAllSymbols()
         {
             WebCallResult<KucoinTicks> marketDetails = null;
 
@@ -177,36 +182,47 @@ namespace CryptoTicker
             return marketDetails;
         }
 
-        void Socket(Action<KucoinStreamTick> func)
+        public void Socket(Action<KucoinStreamTick> func)
         {
-            var socketClient = new KucoinSocketClient();
+            socketClient = new KucoinSocketClient();
             socketClient.SubscribeToAllTickerUpdates(func);
         }
     }
 
-    class BitFlyer
+    public class BitFlyer
     {
-        Action func = null;
+        Action<Ticker> func = null;
+        RealtimeApi client = null;
+        RealtimeApi client2 = null;
 
-        void Socket(Action func)
+        public void Socket(Action<Ticker> func)
         {
             this.func = func;
 
-            var client = new RealtimeApi();
+            client = new RealtimeApi();
+            client2 = new RealtimeApi();
 
-            client.Subscribe<Ticker>("lightning_ticker_ETH_JPY", null, func, OnError);
-            client.Subscribe<Ticker>("lightning_ticker_BTC_JPY", null, func, OnError);
+            client.Subscribe<Ticker>("lightning_ticker_ETH_JPY", func, onConnect, OnError);
+            client2.Subscribe<Ticker>("lightning_ticker_BTC_JPY", func, onConnect, OnError);
+        }
+
+        void onConnect()
+        {
+
         }
 
         void OnError(string message, Exception ex)
         {
-            //if(func != null) Socket(func);
+            if(func != null) Socket(func);
         }
     }
 
-    class Bittrex
+    public class Bittrex
     {
-        WebCallResult<IEnumerable<BittrexTick>> GetAllSymbols()
+        BittrexSocketClient socketClient = null;
+        Task<CallResult<UpdateSubscription>> subscription = null;
+
+        public WebCallResult<IEnumerable<BittrexTick>> GetAllSymbols()
         {
             WebCallResult<IEnumerable<BittrexTick>> tickers = null;
 
@@ -218,16 +234,26 @@ namespace CryptoTicker
             return tickers;
         }
 
-        void Socket(Action<BittrexTickersUpdate> func)
+        public void Socket(Action<BittrexTickersUpdate> func)
         {
-            var socketClient = new BittrexSocketClient();
-            var subscription = socketClient.SubscribeToSymbolTickerUpdatesAsync(func);
+            socketClient = new BittrexSocketClient();
+            subscription = socketClient.SubscribeToSymbolTickerUpdatesAsync(func);
+            //subscription = socketClient.SubscribeToSymbolTickerUpdatesAsync(ticker =>
+            //{
+            //    foreach (var ud in ticker.Deltas)
+            //    {
+            //        var Symbol = ud.Symbol; //***-&&&
+            //        var Price = ud.LastTradeRate;
+            //    }
+            //});
         }
     }
 
-    class Binance
+    public class Binance
     {
-        WebCallResult<IEnumerable<BinancePrice>> GetAllSymbols()
+        BinanceSocketClient socketClient = null;
+
+        public WebCallResult<IEnumerable<BinancePrice>> GetAllSymbols()
         {
             WebCallResult<IEnumerable<BinancePrice>> result = null;
 
@@ -239,10 +265,76 @@ namespace CryptoTicker
             return result;
         }
 
-        void Socket(Action<IEnumerable<IBinanceTick>> func)
+        public void Socket(Action<IEnumerable<IBinanceTick>> func)
         {
-            var socketClient = new BinanceSocketClient();
+            socketClient = new BinanceSocketClient();
             socketClient.Spot.SubscribeToAllSymbolTickerUpdates(func);
+        }
+    }
+
+    public class Currency
+    {
+        public static List<CurrencyExchangeModel> Exchange(
+            out DateTime date,
+            string[] CurrencyList
+            )
+        {
+            List<CurrencyExchangeModel> Models = new List<CurrencyExchangeModel>();
+            date = new DateTime();
+
+            string url = "https://earthquake.kr:23490/query/";
+
+            foreach(string currency in CurrencyList)
+            {
+                url += currency + "KRW" + ",";
+                url += "KRW" + currency + ",";
+            }
+
+            url = url.Substring(0, url.Length - 1);
+
+            string responseText = string.Empty;
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "GET";
+            request.Timeout = 5 * 1000;
+
+            using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
+            {
+                HttpStatusCode status = resp.StatusCode;
+                Console.WriteLine(status);
+
+                Stream respStream = resp.GetResponseStream();
+                using (StreamReader sr = new StreamReader(respStream))
+                {
+                    responseText = sr.ReadToEnd();
+                }
+            }
+
+            dynamic cu = JsonConvert.DeserializeObject<dynamic>(responseText);
+
+            foreach (dynamic c in cu)
+            {
+                string name = c.Name;
+
+                if (name == "update")
+                {
+                    long TimeStamp = c.Value;
+
+                    date = new DateTime(1970, 1, 1, 0, 0, 0, 0).AddMilliseconds(TimeStamp);
+                }
+                else
+                {
+                    string Target = name.Substring(0, 3);
+                    string Stand = name.Substring(3);
+                    double Price = c.Value[0];
+                    double High = c.Value[5];
+                    double Low = c.Value[6];
+
+                    Models.Add(new CurrencyExchangeModel(Target, Stand, Price, High, Low));
+                }
+            }
+
+            return Models;
         }
     }
 }

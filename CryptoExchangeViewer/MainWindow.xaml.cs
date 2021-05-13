@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-using DBHelper;
+using CryptoExchangeViewer.Init;
 
 namespace CryptoExchangeViewer
 {
@@ -26,8 +26,7 @@ namespace CryptoExchangeViewer
         {
             InitializeComponent();
 
-            DBHelper.DBHelper db = new DBHelper.DBHelper();
-
+            Init.Init init = new Init.Init(TB1, TB2, TB3, TB4, TB5, TB6);
         }
     }
 }

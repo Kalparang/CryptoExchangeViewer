@@ -63,8 +63,6 @@ CREATE TABLE IF NOT EXISTS `BlackList` (
 ";
             SQLiteCommand command = new SQLiteCommand(sql, conn);
             int result = command.ExecuteNonQuery();
-
-            conn.Close();
         }
     }
 }
