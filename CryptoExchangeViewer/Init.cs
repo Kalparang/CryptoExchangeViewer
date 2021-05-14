@@ -155,7 +155,7 @@ namespace CryptoExchangeViewer.Init
         {
             label5.Dispatcher.Invoke(new Action(() =>
             {
-                label5.Text = Convert.ToString(Tickers);
+                label5.Text = Convert.ToString(Tickers.Sequence);
             }));
         }
 
@@ -177,7 +177,7 @@ namespace CryptoExchangeViewer.Init
             }));
         }
 
-        private void BinanceInit()
+            private void BinanceInit()
         {
             binance = new CryptoTicker.Binance();
 

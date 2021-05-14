@@ -238,14 +238,6 @@ namespace CryptoTicker
         {
             socketClient = new BittrexSocketClient();
             subscription = socketClient.SubscribeToSymbolTickerUpdatesAsync(func);
-            //subscription = socketClient.SubscribeToSymbolTickerUpdatesAsync(ticker =>
-            //{
-            //    foreach (var ud in ticker.Deltas)
-            //    {
-            //        var Symbol = ud.Symbol; //***-&&&
-            //        var Price = ud.LastTradeRate;
-            //    }
-            //});
         }
     }
 
