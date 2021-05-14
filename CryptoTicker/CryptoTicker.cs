@@ -29,7 +29,9 @@ namespace CryptoTicker
     public class Korbit
     {
         private WebSocket ws;
-
+        public readonly string Market = "Korbit";
+        public readonly string Nation = "Korea";
+        
         public Dictionary<string, Dictionary<string, string>> GetAllSymbols()
         {
             Dictionary<string, Dictionary<string, string>> result = null;
@@ -49,50 +51,6 @@ namespace CryptoTicker
 
             Dictionary<string, Dictionary<string, string>> Symbols =
                 JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(responseFromServer);
-
-            //foreach (var Symbol in Symbols)
-            //{
-            //    var symbol = Symbol.Key; ///***_&&&
-            //    foreach (var data in Symbol.Value)
-            //    {
-            //        switch (data.Key)
-            //        {
-            //            case "timestamp":   //문제 있음 확인 해야됨
-            //                var timestamp = new DateTime(new DateTime(long.Parse(data.Value)).Ticks + new DateTime(1970, 1, 1, 0, 0, 0).Ticks);
-            //                break;
-            //            case "last":
-            //                var price = data.Value;
-            //                break;
-            //            case "open":
-            //                var open = data.Value;
-            //                break;
-            //            case "bid":
-            //                var bid = data.Value;
-            //                break;
-            //            case "ask":
-            //                var ask = data.Value;
-            //                break;
-            //            case "low":
-            //                var low = data.Value;
-            //                break;
-            //            case "high":
-            //                var high = data.Value;
-            //                break;
-            //            case "volume":
-            //                var volume = data.Value;
-            //                break;
-            //            case "change":
-            //                var change = data.Value;
-            //                break;
-            //            case "changePercent":
-            //                var changePercent = data.Value;
-            //                break;
-            //            default:
-            //                var de = data.Value;
-            //                break;
-            //        }
-            //    }
-            //}
 
             result = Symbols;
 
@@ -146,6 +104,8 @@ namespace CryptoTicker
     public class Huobi
     {
         HuobiSocketClient socketClient = null;
+        public readonly string Market = "Huobi";
+        public readonly string Nation = "China";
 
         public WebCallResult<HuobiSymbolTicks> GetAllSymbols()
         {
@@ -166,9 +126,11 @@ namespace CryptoTicker
         }
     }
 
-    public class Kukoin
+    public class Kucoin
     {
         KucoinSocketClient socketClient = null;
+        public readonly string Market = "Kucoin";
+        public readonly string Nation = "Hongkong";
 
         public WebCallResult<KucoinTicks> GetAllSymbols()
         {
@@ -195,6 +157,16 @@ namespace CryptoTicker
         RealtimeApi client = null;
         RealtimeApi client2 = null;
 
+        public readonly string Market = "BitFlyer";
+        public readonly string Nation = "Japan";
+
+        Dictionary<string, double> LastPrice;
+
+        public BitFlyer()
+        {
+            LastPrice = new Dictionary<string, double>();
+        }
+
         public void Socket(Action<Ticker> func)
         {
             this.func = func;
@@ -202,13 +174,30 @@ namespace CryptoTicker
             client = new RealtimeApi();
             client2 = new RealtimeApi();
 
-            client.Subscribe<Ticker>("lightning_ticker_ETH_JPY", func, onConnect, OnError);
-            client2.Subscribe<Ticker>("lightning_ticker_BTC_JPY", func, onConnect, OnError);
+            client.Subscribe<Ticker>("lightning_ticker_ETH_JPY", onReceive, onConnect, OnError);
+            client2.Subscribe<Ticker>("lightning_ticker_BTC_JPY", onReceive, onConnect, OnError);
         }
 
         void onConnect()
         {
 
+        }
+
+        void onReceive(Ticker ticker)
+        {
+            try
+            {
+                if (ticker.LatestPrice == LastPrice[ticker.ProductCode])
+                    return;
+                else
+                    LastPrice[ticker.ProductCode] = ticker.LatestPrice;
+            }
+            catch (KeyNotFoundException ke)
+            {
+                LastPrice.Add(ticker.ProductCode, ticker.LatestPrice);
+            }
+
+            func(ticker);
         }
 
         void OnError(string message, Exception ex)
@@ -221,17 +210,53 @@ namespace CryptoTicker
     {
         BittrexSocketClient socketClient = null;
         Task<CallResult<UpdateSubscription>> subscription = null;
+        BittrexClient client;
+
+        DateTime LastTime;
+
+        public readonly string Market = "Bittrex";
+        public readonly string Nation = "America";
+
+        public Bittrex()
+        {
+            LastTime = DateTime.UtcNow;
+        }
 
         public WebCallResult<IEnumerable<BittrexTick>> GetAllSymbols()
         {
             WebCallResult<IEnumerable<BittrexTick>> tickers = null;
 
-            using (var client = new BittrexClient())
-            {
-                tickers = client.GetTickers();
-            }
+            client = new BittrexClient();
+            
+            tickers = client.GetTickers();
 
             return tickers;
+        }
+
+        public DateTime GetServerTime()
+        {
+            DateTime date;
+
+            WebCallResult<DateTime> webCallResult = client.GetServerTime();
+            date = webCallResult.Data;
+
+            if(date.Year < 2000)
+            {
+                foreach (var d in webCallResult.ResponseHeaders)
+                {
+                    if (d.Key == "Date")
+                    {
+                        foreach(var q in d.Value)
+                        {
+                            date = Convert.ToDateTime(q).ToUniversalTime();
+                        }
+                        
+                        break;
+                    }
+                }
+            }
+
+            return date;
         }
 
         public void Socket(Action<BittrexTickersUpdate> func)
@@ -244,17 +269,46 @@ namespace CryptoTicker
     public class Binance
     {
         BinanceSocketClient socketClient = null;
+        BinanceClient client;
+
+        public readonly string Market = "Binance";
+        public readonly string Nation = "Europe";
 
         public WebCallResult<IEnumerable<BinancePrice>> GetAllSymbols()
         {
             WebCallResult<IEnumerable<BinancePrice>> result = null;
 
-            using (var client = new BinanceClient())
-            {
-                result = client.Spot.Market.GetPrices();
-            }
+            client = new BinanceClient();
+            
+            result = client.Spot.Market.GetPrices();
 
             return result;
+        }
+
+        public DateTime GetServerTime()
+        {
+            DateTime date;
+
+            WebCallResult<DateTime> webCallResult = client.Spot.System.GetServerTime();
+            date = webCallResult.Data;
+
+            if (date.Year < 2000)
+            {
+                foreach (var d in webCallResult.ResponseHeaders)
+                {
+                    if (d.Key == "Date")
+                    {
+                        foreach (var q in d.Value)
+                        {
+                            date = Convert.ToDateTime(q).ToUniversalTime();
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            return date;
         }
 
         public void Socket(Action<IEnumerable<IBinanceTick>> func)
@@ -322,7 +376,7 @@ namespace CryptoTicker
                     double High = c.Value[5];
                     double Low = c.Value[6];
 
-                    Models.Add(new CurrencyExchangeModel(Target, Stand, Price, High, Low));
+                    Models.Add(new CurrencyExchangeModel(date, Target, Stand, Price, High, Low));
                 }
             }
 
