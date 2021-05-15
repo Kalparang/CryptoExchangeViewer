@@ -3,20 +3,28 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CryptoExchangeViewer"
+        xmlns:local="clr-namespace:CryptoExchangeViewer" xmlns:viewmodels="clr-namespace:CryptoExchangeViewer.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="1922.562">
+    <Window.DataContext>
+        <viewmodels:MainViewModel/>
+    </Window.DataContext>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="0*"/>
-        </Grid.ColumnDefinitions>
-        <TextBox Name="TB1" HorizontalAlignment="Left" Height="400" Margin="10,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="300"/>
-        <TextBox Name="TB2" HorizontalAlignment="Left" Height="400" Margin="327,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="300"/>
-        <TextBox Name="TB3" HorizontalAlignment="Left" Height="400" Margin="646,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="300"/>
-        <TextBox Name="TB4" HorizontalAlignment="Left" Height="400" Margin="962,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="300"/>
-        <TextBox Name="TB5" HorizontalAlignment="Left" Height="400" Margin="1278,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="300"/>
-        <TextBox Name="TB6" HorizontalAlignment="Left" Height="400" Margin="1599,10,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="300"/>
-
+        <ListView Grid.Row="0" Grid.RowSpan="2" Margin="5" ItemsSource="{Binding CryptoDetail}">
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn Width="60" Header="Target"
+                        DisplayMemberBinding="{Binding TargetCrypto}"/>
+                        <GridViewColumn Width="100" Header="Stand"
+                        DisplayMemberBinding="{Binding StandCrypto}"/>
+                        <GridViewColumn Width="100" Header="Price"
+                        DisplayMemberBinding="{Binding Price}"/>
+                        <GridViewColumn Width="60" Header="Market"
+                        DisplayMemberBinding="{Binding Market}"/>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </Window>

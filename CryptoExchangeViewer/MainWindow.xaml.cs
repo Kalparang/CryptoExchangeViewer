@@ -26,7 +26,7 @@ namespace CryptoExchangeViewer
         {
             InitializeComponent();
 
-            Init.Init init = new Init.Init(TB1, TB2, TB3, TB4, TB5, TB6);
+            Init.Init init = new Init.Init();
         }
     }
 }

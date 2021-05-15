@@ -31,17 +31,8 @@ namespace CryptoExchangeViewer.Init
         private CryptoTicker.Binance binance = null;
         private DBHelper.DBHelper db = null;
 
-        TextBox label1, label2, label3, label4, label5, label6;
-
-        public Init(TextBox label1, TextBox label2, TextBox label3, TextBox label4, TextBox label5, TextBox label6)
+        public Init()
         {
-            this.label1 = label1;
-            this.label2 = label2;
-            this.label3 = label3;
-            this.label4 = label4;
-            this.label5 = label5;
-            this.label6 = label6;
-
             DBInit();
 
             new Thread(KorbitInit).Start();
@@ -60,11 +51,6 @@ namespace CryptoExchangeViewer.Init
 
         private void KorbitSocketFunc(dynamic Tickers)
         {
-            label1.Dispatcher.Invoke(new Action(() =>
-            {
-                label1.Text = Convert.ToString(Tickers);
-            }));
-
             long Timestamp = Tickers["timestamp"];
             string symbol = Tickers["data"]["currency_pair"];    //***_&&&
             double price = double.Parse(((string)Tickers["data"]["last"]).Trim('{').Trim('}'));
@@ -131,11 +117,6 @@ namespace CryptoExchangeViewer.Init
 
         private void HuobiSocketFunc(HuobiSymbolDatas Datas)
         {
-            label2.Dispatcher.Invoke(new Action(() =>
-            {
-                label2.Text = Convert.ToString(Datas.Timestamp);
-            }));
-
             DateTime date = Datas.Timestamp;
 
             foreach (HuobiSymbolTicker tick in Datas.Ticks)
@@ -196,11 +177,6 @@ namespace CryptoExchangeViewer.Init
 
         private void KucoinSocketFunc(KucoinStreamTick Tick)
         {
-            label3.Dispatcher.Invoke(new Action(() =>
-            {
-                label3.Text = Convert.ToString(Tick.Timestamp);
-            }));
-
             string Target = Tick.Symbol.Split('-')[0];
             string Stand = Tick.Symbol.Split('-')[1];
             double Price = (double)Tick.LastTradePrice;
@@ -252,11 +228,6 @@ namespace CryptoExchangeViewer.Init
 
         private void BitFlyerSocketFunc(Ticker ticker)
         {
-            label4.Dispatcher.Invoke(new Action(() =>
-            {
-                label4.Text = Convert.ToString(ticker);
-            }));
-
             string Target = ticker.ProductCode.Split('_')[0];
             string Stand = ticker.ProductCode.Split('_')[1];
             double Price = ticker.LatestPrice;
@@ -279,11 +250,6 @@ namespace CryptoExchangeViewer.Init
 
         private void BittrexSocketFunc(BittrexTickersUpdate Tickers)
         {
-            label5.Dispatcher.Invoke(new Action(() =>
-            {
-                label5.Text = Convert.ToString(Tickers.Sequence);
-            }));
-
             DateTime Date = bittrex.GetServerTime();
 
             foreach (BittrexTick tick in Tickers.Deltas)
@@ -336,11 +302,6 @@ namespace CryptoExchangeViewer.Init
 
         private void BinanceSocketFunc(IEnumerable<IBinanceTick> Tickers)
         {
-            label6.Dispatcher.Invoke(new Action(() =>
-            {
-                label6.Text = Convert.ToString(Tickers.ToArray()[0].LastPrice);
-            }));
-
             DateTime Date = binance.GetServerTime();
 
             foreach (var tick in Tickers)
