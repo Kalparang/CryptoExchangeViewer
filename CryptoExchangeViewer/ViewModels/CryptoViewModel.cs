@@ -32,36 +32,50 @@ namespace CryptoExchangeViewer.ViewModels
             }
         }
 
-        private double price;
-        public double Price
+        private string maxMarketName;
+        public string MaxMarketName
         {
-            get { return price; }
+            get { return maxMarketName; }
             set
             {
-                price = value;
-                RaisePropertyChangedEvent("Price");
+                maxMarketName = value;
+                RaisePropertyChangedEvent("MaxMarketName");
             }
         }
 
-        private string market;
-        public string Market
+        private string minMarketName;
+        public string MinMarketName
         {
-            get { return market; }
+            get { return minMarketName; }
             set
             {
-                market = value;
-                RaisePropertyChangedEvent("Market");
+                minMarketName = value;
+                RaisePropertyChangedEvent("MinMarketName");
             }
         }
+
+        private double percent;
+        public double Percent
+        {
+            get { return percent; }
+            set
+            {
+                percent = value;
+                RaisePropertyChangedEvent("Percent");
+            }
+        }
+
+
 
         public CryptoViewModel() { }
 
-        public CryptoViewModel(string target, string stand, double price, string market)
+        public CryptoViewModel(string target, string stand, string maxmarket, string minmarket, double percent)
         {
             this.targetCrypto = target;
             this.standCrypto = stand;
-            this.price = price;
-            this.market = market;
+            this.maxMarketName = maxmarket;
+            this.minMarketName = minmarket;
+            this.percent = percent;
         }
     }
 }

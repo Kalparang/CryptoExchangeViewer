@@ -16,12 +16,14 @@
                     <GridView.Columns>
                         <GridViewColumn Width="60" Header="Target"
                         DisplayMemberBinding="{Binding TargetCrypto}"/>
-                        <GridViewColumn Width="100" Header="Stand"
+                        <GridViewColumn Width="60" Header="Stand"
                         DisplayMemberBinding="{Binding StandCrypto}"/>
-                        <GridViewColumn Width="100" Header="Price"
-                        DisplayMemberBinding="{Binding Price}"/>
-                        <GridViewColumn Width="60" Header="Market"
-                        DisplayMemberBinding="{Binding Market}"/>
+                        <GridViewColumn Width="60" Header="MaxMarket"
+                        DisplayMemberBinding="{Binding MaxMarketName}"/>
+                        <GridViewColumn Width="60" Header="MinMarket"
+                        DisplayMemberBinding="{Binding MinMarketName}"/>
+                        <GridViewColumn Width="100" Header="Percent"
+                        DisplayMemberBinding="{Binding Percent}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>

@@ -55,14 +55,15 @@ namespace CryptoExchangeViewer.Init
             string symbol = Tickers["data"]["currency_pair"];    //***_&&&
             double price = double.Parse(((string)Tickers["data"]["last"]).Trim('{').Trim('}'));
 
-            DBHelper.DBHelper.CryptoInputModel model = new DBHelper.DBHelper.CryptoInputModel();
-            model.Market = korbit.Market;
+            string Market = korbit.Market;
 
-            model.Date = new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(Timestamp);
+            DateTime Date = new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(Timestamp);
             
-            model.Target = symbol.Split('_')[0];
-            model.Stand = symbol.Split('_')[1];
-            model.Price = price;
+            string Target = symbol.Split('_')[0];
+            string Stand = symbol.Split('_')[1];
+            double Price = price;
+
+            DBHelper.DBHelper.CryptoInputModel model = new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, Market, Date);
 
             db.InputCryptoData(model);
         }
@@ -73,44 +74,48 @@ namespace CryptoExchangeViewer.Init
 
             db.InputMarketData(new DBHelper.DBHelper.MarketInputModel(korbit.Market, korbit.Nation));
 
-            Dictionary<string, Dictionary<string, string>> KorbitMarketDetails =
-                korbit.GetAllSymbols();
+            //Dictionary<string, Dictionary<string, string>> KorbitMarketDetails =
+            //    korbit.GetAllSymbols();
 
-            foreach (var Symbol in KorbitMarketDetails)
-            {
-                var symbol = Symbol.Key; ///***_&&&
+            //foreach (var Symbol in KorbitMarketDetails)
+            //{
+            //    var symbol = Symbol.Key; ///***_&&&
 
-                DBHelper.DBHelper.CryptoInputModel model = new DBHelper.DBHelper.CryptoInputModel();
+            //    string Market = korbit.Market;
+            //    string Target = symbol.Split('_')[0];
+            //    string Stand = symbol.Split('_')[1];
+            //    DateTime Date = DateTime.UtcNow;
+            //    double Price = 0;
+            //    double High = 0;
+            //    double Low = 0;
 
-                model.Market = korbit.Market;
-                model.Target = symbol.Split('_')[0];
-                model.Stand = symbol.Split('_')[1];
+            //    foreach (var data in Symbol.Value)
+            //    {
+            //        switch (data.Key)
+            //        {
+            //            case "timestamp":
+            //                Date =
+            //                    new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(long.Parse(data.Value));
+            //                break;
+            //            case "last":
+            //                Price = double.Parse(data.Value);
+            //                break;
+            //            case "low":
+            //                Low = double.Parse(data.Value);
+            //                break;
+            //            case "high":
+            //                High = double.Parse(data.Value);
+            //                break;
+            //            default:
+            //                var de = data.Value;
+            //                break;
+            //        }
+            //    }
 
-                foreach (var data in Symbol.Value)
-                {
-                    switch (data.Key)
-                    {
-                        case "timestamp":
-                            model.Date =
-                                new DateTime(1970, 1, 1, 0, 0, 0).AddMilliseconds(long.Parse(data.Value));
-                            break;
-                        case "last":
-                            model.Price = double.Parse(data.Value);
-                            break;
-                        case "low":
-                            var low = double.Parse(data.Value);
-                            break;
-                        case "high":
-                            var high = double.Parse(data.Value);
-                            break;
-                        default:
-                            var de = data.Value;
-                            break;
-                    }
-                }
+            //    DBHelper.DBHelper.CryptoInputModel model = new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, Market, Date);
 
-                db.InputCryptoData(model);
-            }
+            //    db.InputCryptoData(model);
+            //}
 
             korbit.Socket(KorbitSocketFunc);
         }
@@ -124,17 +129,19 @@ namespace CryptoExchangeViewer.Init
                 string Target;
                 string Stand;
 
-                int mid = tick.Symbol.Length / 2;
+                //int mid = tick.Symbol.Length / 2;
 
-                Target = tick.Symbol.Substring(0, mid);
-                Stand = tick.Symbol.Substring(mid);
+                //Target = tick.Symbol.Substring(0, mid);
+                //Stand = tick.Symbol.Substring(mid);
+
+                string[] coins = CoinSpliter(tick.Symbol);
 
                 double Price = (double)tick.Close;
                 double High = (double)tick.High;
                 double Low = (double)tick.Low;
 
                 DBHelper.DBHelper.CryptoInputModel model =
-                    new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, huobi.Market, date);
+                    new DBHelper.DBHelper.CryptoInputModel(coins[0], coins[1], Price, huobi.Market, date);
 
                 db.InputCryptoData(model);
             }
@@ -147,30 +154,30 @@ namespace CryptoExchangeViewer.Init
 
             db.InputMarketData(new DBHelper.DBHelper.MarketInputModel(huobi.Market, huobi.Nation));
 
-            WebCallResult<HuobiSymbolTicks> HuobiMarketDetails =
-                huobi.GetAllSymbols();
+            //WebCallResult<HuobiSymbolTicks> HuobiMarketDetails =
+            //    huobi.GetAllSymbols();
 
-            DateTime date = HuobiMarketDetails.Data.Timestamp;
+            //DateTime date = HuobiMarketDetails.Data.Timestamp;
 
-            foreach(HuobiSymbolTick tick in HuobiMarketDetails.Data.Ticks)
-            {
-                string Target;
-                string Stand;
+            //foreach(HuobiSymbolTick tick in HuobiMarketDetails.Data.Ticks)
+            //{
+            //    string Target;
+            //    string Stand;
 
-                int mid = tick.Symbol.Length / 2;
+            //    int mid = tick.Symbol.Length / 2;
 
-                Target = tick.Symbol.Substring(0, mid);
-                Stand = tick.Symbol.Substring(mid);
+            //    Target = tick.Symbol.Substring(0, mid);
+            //    Stand = tick.Symbol.Substring(mid);
 
-                double Price = (double)tick.Ask;
-                double High = (double)tick.High;
-                double Low = (double)tick.Low;
+            //    double Price = (double)tick.Ask;
+            //    double High = (double)tick.High;
+            //    double Low = (double)tick.Low;
 
-                DBHelper.DBHelper.CryptoInputModel model =
-                    new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, huobi.Market, date);
+            //    DBHelper.DBHelper.CryptoInputModel model =
+            //        new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, huobi.Market, date);
 
-                db.InputCryptoData(model);
-            }
+            //    db.InputCryptoData(model);
+            //}
 
             huobi.Socket(HuobiSocketFunc);
         }
@@ -194,34 +201,34 @@ namespace CryptoExchangeViewer.Init
 
             db.InputMarketData(new DBHelper.DBHelper.MarketInputModel(kucoin.Market, kucoin.Nation));
 
-            WebCallResult<KucoinTicks> KukoinMarketDetails =
-                kucoin.GetAllSymbols();
+            //WebCallResult<KucoinTicks> KukoinMarketDetails =
+            //    kucoin.GetAllSymbols();
 
-            DateTime date = KukoinMarketDetails.Data.Timestamp;
+            //DateTime date = KukoinMarketDetails.Data.Timestamp;
 
-            foreach(KucoinAllTick data in KukoinMarketDetails.Data.Data)
-            {
-                string Symbol = data.Symbol;
-                double Price = 0;
-                double High = 0;
-                double Low = 0;
+            //foreach(KucoinAllTick data in KukoinMarketDetails.Data.Data)
+            //{
+            //    string Symbol = data.Symbol;
+            //    double Price = 0;
+            //    double High = 0;
+            //    double Low = 0;
 
-                Symbol = data.Symbol;
-                if(data.Last != null)
-                    Price = (double)data.Last;
-                if (data.High != null)
-                    High = (double)data.High;
-                if (data.Low != null)
-                    Low = (double)data.Low;
+            //    Symbol = data.Symbol;
+            //    if(data.Last != null)
+            //        Price = (double)data.Last;
+            //    if (data.High != null)
+            //        High = (double)data.High;
+            //    if (data.Low != null)
+            //        Low = (double)data.Low;
 
-                string Target = Symbol.Split('-')[0];
-                string Stand = Symbol.Split('-')[1];
+            //    string Target = Symbol.Split('-')[0];
+            //    string Stand = Symbol.Split('-')[1];
 
-                DBHelper.DBHelper.CryptoInputModel model =
-                    new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, kucoin.Market, date);
+            //    DBHelper.DBHelper.CryptoInputModel model =
+            //        new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, kucoin.Market, date);
 
-                db.InputCryptoData(model);
-            }
+            //    db.InputCryptoData(model);
+            //}
 
             kucoin.Socket(KucoinSocketFunc);
         }
@@ -271,31 +278,31 @@ namespace CryptoExchangeViewer.Init
 
             db.InputMarketData(new DBHelper.DBHelper.MarketInputModel(bittrex.Market, bittrex.Nation));
 
-            WebCallResult<IEnumerable<BittrexTick>> BittrexMarketDetails =
-                bittrex.GetAllSymbols();
+            //WebCallResult<IEnumerable<BittrexTick>> BittrexMarketDetails =
+            //    bittrex.GetAllSymbols();
 
-            DateTime Date = DateTime.UtcNow;
+            //DateTime Date = DateTime.UtcNow;
 
-            foreach(var d in BittrexMarketDetails.ResponseHeaders)
-            {
-                if (d.Key == "Date")
-                {
-                    Date = Convert.ToDateTime(d.Value.First()).ToUniversalTime();
-                    break;
-                }
-            }
+            //foreach(var d in BittrexMarketDetails.ResponseHeaders)
+            //{
+            //    if (d.Key == "Date")
+            //    {
+            //        Date = Convert.ToDateTime(d.Value.First()).ToUniversalTime();
+            //        break;
+            //    }
+            //}
 
-            foreach (BittrexTick tick in BittrexMarketDetails.Data)
-            {
-                string Target = tick.Symbol.Split('-')[0];
-                string Stand = tick.Symbol.Split('-')[1];
-                double Price = (double)tick.LastTradeRate;
+            //foreach (BittrexTick tick in BittrexMarketDetails.Data)
+            //{
+            //    string Target = tick.Symbol.Split('-')[0];
+            //    string Stand = tick.Symbol.Split('-')[1];
+            //    double Price = (double)tick.LastTradeRate;
 
-                DBHelper.DBHelper.CryptoInputModel model =
-                    new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, bittrex.Market, Date);
+            //    DBHelper.DBHelper.CryptoInputModel model =
+            //        new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, bittrex.Market, Date);
 
-                db.InputCryptoData(model);
-            }
+            //    db.InputCryptoData(model);
+            //}
 
             bittrex.Socket(BittrexSocketFunc);
         }
@@ -306,13 +313,15 @@ namespace CryptoExchangeViewer.Init
 
             foreach (var tick in Tickers)
             {
-                int mid = tick.Symbol.Length / 2;
-                string Target = tick.Symbol.Substring(0, mid);
-                string Stand = tick.Symbol.Substring(mid);
+                //int mid = tick.Symbol.Length / 2;
+                //string Target = tick.Symbol.Substring(0, mid);
+                //string Stand = tick.Symbol.Substring(mid);
+
+                string[] coins = CoinSpliter(tick.Symbol);
                 double Price = (double)tick.LastPrice;
 
                 DBHelper.DBHelper.CryptoInputModel model =
-                    new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, binance.Market, Date);
+                    new DBHelper.DBHelper.CryptoInputModel(coins[0], coins[1], Price, binance.Market, Date);
 
                 db.InputCryptoData(model);
             }
@@ -324,26 +333,64 @@ namespace CryptoExchangeViewer.Init
 
             db.InputMarketData(new DBHelper.DBHelper.MarketInputModel(binance.Market, binance.Nation));
 
-            WebCallResult<IEnumerable<BinancePrice>> BinanceMarketDetail =
-                binance.GetAllSymbols();
+            //WebCallResult<IEnumerable<BinancePrice>> BinanceMarketDetail =
+            //    binance.GetAllSymbols();
 
-            DateTime Date = binance.GetServerTime();
+            //DateTime Date = binance.GetServerTime();
 
-            foreach (var data in BinanceMarketDetail.Data)
-            {
-                int mid = data.Symbol.Length / 2;
+            //foreach (var data in BinanceMarketDetail.Data)
+            //{
+            //    int mid = data.Symbol.Length / 2;
 
-                string Target = data.Symbol.Substring(0, mid);
-                string Stand = data.Symbol.Substring(mid);
-                double Price = (double)data.Price;
+            //    string Target = data.Symbol.Substring(0, mid);
+            //    string Stand = data.Symbol.Substring(mid);
+            //    double Price = (double)data.Price;
 
-                DBHelper.DBHelper.CryptoInputModel model =
-                    new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, binance.Market, Date);
+            //    DBHelper.DBHelper.CryptoInputModel model =
+            //        new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, binance.Market, Date);
 
-                db.InputCryptoData(model);
-            }
+            //    db.InputCryptoData(model);
+            //}
 
             binance.Socket(BinanceSocketFunc);
+        }
+
+        private string[] CoinSpliter(string coin)
+        {
+            string[] coins = { "", "" };
+
+            if(coin.Length < 8)
+            {
+                int mid = coin.Length / 2;
+                coins[0] = coin.Substring(0, mid);
+                coins[1] = coin.Substring(mid);
+            }
+            else
+            {
+                int index = coin.LastIndexOf("UP", 3);
+
+                if(index != -1 && (coin.Length - 5) > index)
+                {
+                    index = index + 1;
+                    coins[0] = coin.Substring(0, index);
+                    coins[1] = coin.Substring(index);
+
+                    return coins;
+                }
+
+                index = coin.LastIndexOf("DOWN", 3);
+
+                if (index != -1 && (coin.Length - 7) > index)
+                {
+                    index = index + 3;
+                    coins[0] = coin.Substring(0, index);
+                    coins[1] = coin.Substring(index);
+
+                    return coins;
+                }
+            }
+
+            return coins;
         }
 
         private void CurrencyExchangeInit()

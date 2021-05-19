@@ -220,14 +220,13 @@ namespace CryptoTicker
         public Bittrex()
         {
             LastTime = DateTime.UtcNow;
+            client = new BittrexClient();
         }
 
         public WebCallResult<IEnumerable<BittrexTick>> GetAllSymbols()
         {
             WebCallResult<IEnumerable<BittrexTick>> tickers = null;
 
-            client = new BittrexClient();
-            
             tickers = client.GetTickers();
 
             return tickers;
@@ -274,12 +273,15 @@ namespace CryptoTicker
         public readonly string Market = "Binance";
         public readonly string Nation = "Europe";
 
+        public Binance()
+        {
+            client = new BinanceClient();
+        }
+
         public WebCallResult<IEnumerable<BinancePrice>> GetAllSymbols()
         {
             WebCallResult<IEnumerable<BinancePrice>> result = null;
 
-            client = new BinanceClient();
-            
             result = client.Spot.Market.GetPrices();
 
             return result;
@@ -344,6 +346,12 @@ namespace CryptoTicker
             request.Method = "GET";
             request.Timeout = 5 * 1000;
 
+            System.Net.ServicePointManager.ServerCertificateValidationCallback
+                = new System.Net.Security.RemoteCertificateValidationCallback((sender, certification, chain, sslPolicyErrors) =>
+                {
+                    return true;
+                });
+
             using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
             {
                 HttpStatusCode status = resp.StatusCode;
@@ -355,6 +363,8 @@ namespace CryptoTicker
                     responseText = sr.ReadToEnd();
                 }
             }
+
+            System.Net.ServicePointManager.ServerCertificateValidationCallback = null;
 
             dynamic cu = JsonConvert.DeserializeObject<dynamic>(responseText);
 

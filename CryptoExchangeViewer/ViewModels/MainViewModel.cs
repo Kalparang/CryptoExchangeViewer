@@ -35,9 +35,37 @@ namespace CryptoExchangeViewer.ViewModels
 
             while (true)
             {
-                var result = await db.SelectTest();
+                //var result = await db.SelectTest2();
+                var result = db.select();
 
-                CryptoDetail = new ObservableCollection<CryptoViewModel>(result.Select(r => new CryptoViewModel(r.Target, r.Stand, r.Price, r.Market)).ToList());
+                var ccount = cryptoDetail.Count;
+                var acount = result.Count();
+
+                if (cryptoDetail.Count < result.Count())
+                {
+                    CryptoDetail = new ObservableCollection<CryptoViewModel>(result.Select(r => new CryptoViewModel(
+                        r.Target, r.Stand, r.MaxMarketName, r.MinMarketName, r.Percent)).ToList());
+                }
+                else
+                {
+                    foreach (var data in result)
+                    {
+                        CryptoViewModel model = null;
+
+                        foreach (var crypto in cryptoDetail)
+                        {
+                            if (crypto.TargetCrypto == data.Target && crypto.StandCrypto == data.Stand)
+                            {
+                                model = crypto;
+                                crypto.Percent = data.Percent;
+                                break;
+                            }
+                        }
+
+                        //    if (model == null)
+                        //        cryptoDetail.Add(new CryptoViewModel(data.Target, data.Stand, data.MaxMarketName, data.MinMarketName, data.Percent));
+                    }
+                }
 
                 System.Threading.Thread.Sleep(3000);
             }
