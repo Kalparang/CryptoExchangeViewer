@@ -8,7 +8,78 @@ using CryptoExchangeViewer.MVVM;
 
 namespace CryptoExchangeViewer.ViewModels
 {
-    public class CryptoViewModel : ObservableObject
+    //public class CryptoViewModel : ObservableObject
+    //{
+    //    private string targetCrypto;
+    //    public string TargetCrypto
+    //    {
+    //        get { return targetCrypto; }
+    //        set
+    //        {
+    //            targetCrypto = value;
+    //            RaisePropertyChangedEvent("TargetCrypto");
+    //        }
+    //    }
+
+    //    private string standCrypto;
+    //    public string StandCrypto
+    //    {
+    //        get { return standCrypto; }
+    //        set
+    //        {
+    //            standCrypto = value;
+    //            RaisePropertyChangedEvent("StandCrypto");
+    //        }
+    //    }
+
+    //    private string maxMarketName;
+    //    public string MaxMarketName
+    //    {
+    //        get { return maxMarketName; }
+    //        set
+    //        {
+    //            maxMarketName = value;
+    //            RaisePropertyChangedEvent("MaxMarketName");
+    //        }
+    //    }
+
+    //    private string minMarketName;
+    //    public string MinMarketName
+    //    {
+    //        get { return minMarketName; }
+    //        set
+    //        {
+    //            minMarketName = value;
+    //            RaisePropertyChangedEvent("MinMarketName");
+    //        }
+    //    }
+
+    //    private double percent;
+    //    public double Percent
+    //    {
+    //        get { return percent; }
+    //        set
+    //        {
+    //            percent = value;
+    //            RaisePropertyChangedEvent("Percent");
+    //        }
+    //    }
+
+
+
+    //    public CryptoViewModel() { }
+
+    //    public CryptoViewModel(string target, string stand, string maxmarket, string minmarket, double percent)
+    //    {
+    //        this.targetCrypto = target;
+    //        this.standCrypto = stand;
+    //        this.maxMarketName = maxmarket;
+    //        this.minMarketName = minmarket;
+    //        this.percent = percent;
+    //    }
+    //}
+
+    public class CurrencyViewModel : ObservableObject
     {
         private string targetCrypto;
         public string TargetCrypto
@@ -21,14 +92,36 @@ namespace CryptoExchangeViewer.ViewModels
             }
         }
 
-        private string standCrypto;
-        public string StandCrypto
+        private string maxStandCurrency;
+        public string MaxStandCurrency
         {
-            get { return standCrypto; }
+            get { return maxStandCurrency; }
             set
             {
-                standCrypto = value;
-                RaisePropertyChangedEvent("StandCrypto");
+                maxStandCurrency = value;
+                RaisePropertyChangedEvent("MaxStandCurrency");
+            }
+        }
+
+        private string minStandCurrency;
+        public string MinStandCurrency
+        {
+            get { return minStandCurrency; }
+            set
+            {
+                minStandCurrency = value;
+                RaisePropertyChangedEvent("MinStandCurrency");
+            }
+        }
+
+        private string maxMarketNation;
+        public string MaxMarketNation
+        {
+            get { return maxMarketNation; }
+            set
+            {
+                maxMarketNation = value;
+                RaisePropertyChangedEvent("MaxMarketNation");
             }
         }
 
@@ -43,6 +136,17 @@ namespace CryptoExchangeViewer.ViewModels
             }
         }
 
+        private string minMarketNation;
+        public string MinMarketNation
+        {
+            get { return minMarketNation; }
+            set
+            {
+                minMarketNation = value;
+                RaisePropertyChangedEvent("MinMarketNation");
+            }
+        }
+
         private string minMarketName;
         public string MinMarketName
         {
@@ -51,6 +155,39 @@ namespace CryptoExchangeViewer.ViewModels
             {
                 minMarketName = value;
                 RaisePropertyChangedEvent("MinMarketName");
+            }
+        }
+
+        private decimal targetPrice;
+        public decimal TargetPrice
+        {
+            get { return targetPrice; }
+            set
+            {
+                targetPrice = value;
+                RaisePropertyChangedEvent("TargetPrice");
+            }
+        }
+
+        private decimal maxStandPrice;
+        public decimal MaxStandPrice
+        {
+            get { return maxStandPrice; }
+            set
+            {
+                maxStandPrice = value;
+                RaisePropertyChangedEvent("MaxStandPrice");
+            }
+        }
+
+        private decimal minStandPrice;
+        public decimal MinStandPrice
+        {
+            get { return minStandPrice; }
+            set
+            {
+                minStandPrice = value;
+                RaisePropertyChangedEvent("MinStandPrice");
             }
         }
 
@@ -65,15 +202,26 @@ namespace CryptoExchangeViewer.ViewModels
             }
         }
 
-
-
-        public CryptoViewModel() { }
-
-        public CryptoViewModel(string target, string stand, string maxmarket, string minmarket, double percent)
+        public CurrencyViewModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, double percent)
         {
             this.targetCrypto = target;
-            this.standCrypto = stand;
+            this.maxStandCurrency = maxStand;
+            this.minStandCurrency = "";
+            this.maxMarketNation = maxnation;
             this.maxMarketName = maxmarket;
+            this.minMarketNation = minnation;
+            this.minMarketName = minmarket;
+            this.percent = percent;
+        }
+
+        public CurrencyViewModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, double percent)
+        {
+            this.targetCrypto = target;
+            this.maxStandCurrency = maxStand;
+            this.minStandCurrency = minStand;
+            this.maxMarketNation = maxnation;
+            this.maxMarketName = maxmarket;
+            this.minMarketNation = minnation;
             this.minMarketName = minmarket;
             this.percent = percent;
         }

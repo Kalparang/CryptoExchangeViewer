@@ -130,7 +130,7 @@ namespace CryptoTicker.Model
 
     public class CurrencyExchangeModel
     {
-        public CurrencyExchangeModel(DateTime Date, string Target, string Stand, double Price, double High, double Low)
+        public CurrencyExchangeModel(DateTime Date, string Target, string Stand, decimal Price, decimal High, decimal Low)
         {
             this.Date = Date;
             this.Target = Target;
@@ -143,8 +143,8 @@ namespace CryptoTicker.Model
         public DateTime Date;
         public string Target;
         public string Stand;
-        public double Price;
-        public double High;
-        public double Low;
+        public decimal Price;
+        public decimal High;
+        public decimal Low;
     }
 }

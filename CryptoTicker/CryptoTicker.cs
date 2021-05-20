@@ -160,11 +160,11 @@ namespace CryptoTicker
         public readonly string Market = "BitFlyer";
         public readonly string Nation = "Japan";
 
-        Dictionary<string, double> LastPrice;
+        Dictionary<string, decimal> LastPrice;
 
         public BitFlyer()
         {
-            LastPrice = new Dictionary<string, double>();
+            LastPrice = new Dictionary<string, decimal>();
         }
 
         public void Socket(Action<Ticker> func)
@@ -187,14 +187,14 @@ namespace CryptoTicker
         {
             try
             {
-                if (ticker.LatestPrice == LastPrice[ticker.ProductCode])
+                if (ticker.LatestPrice == (double)LastPrice[ticker.ProductCode])
                     return;
                 else
-                    LastPrice[ticker.ProductCode] = ticker.LatestPrice;
+                    LastPrice[ticker.ProductCode] = (decimal)ticker.LatestPrice;
             }
             catch (KeyNotFoundException ke)
             {
-                LastPrice.Add(ticker.ProductCode, ticker.LatestPrice);
+                LastPrice.Add(ticker.ProductCode, (decimal)ticker.LatestPrice);
             }
 
             func(ticker);
@@ -346,12 +346,6 @@ namespace CryptoTicker
             request.Method = "GET";
             request.Timeout = 5 * 1000;
 
-            System.Net.ServicePointManager.ServerCertificateValidationCallback
-                = new System.Net.Security.RemoteCertificateValidationCallback((sender, certification, chain, sslPolicyErrors) =>
-                {
-                    return true;
-                });
-
             using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
             {
                 HttpStatusCode status = resp.StatusCode;
@@ -363,8 +357,6 @@ namespace CryptoTicker
                     responseText = sr.ReadToEnd();
                 }
             }
-
-            System.Net.ServicePointManager.ServerCertificateValidationCallback = null;
 
             dynamic cu = JsonConvert.DeserializeObject<dynamic>(responseText);
 
@@ -382,9 +374,9 @@ namespace CryptoTicker
                 {
                     string Target = name.Substring(0, 3);
                     string Stand = name.Substring(3);
-                    double Price = c.Value[0];
-                    double High = c.Value[5];
-                    double Low = c.Value[6];
+                    decimal Price = c.Value[0];
+                    decimal High = c.Value[5];
+                    decimal Low = c.Value[6];
 
                     Models.Add(new CurrencyExchangeModel(date, Target, Stand, Price, High, Low));
                 }

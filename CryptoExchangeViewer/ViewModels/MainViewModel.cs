@@ -11,8 +11,8 @@ namespace CryptoExchangeViewer.ViewModels
 {
     public class MainViewModel : ObservableObject
     {
-        private ObservableCollection<CryptoViewModel> cryptoDetail;
-        public ObservableCollection<CryptoViewModel> CryptoDetail
+        private ObservableCollection<CurrencyViewModel> cryptoDetail;
+        public ObservableCollection<CurrencyViewModel> CryptoDetail
         {
             get { return cryptoDetail; }
             set
@@ -22,9 +22,61 @@ namespace CryptoExchangeViewer.ViewModels
             }
         }
 
+        private ObservableCollection<CurrencyViewModel> currencyDetail;
+        public ObservableCollection<CurrencyViewModel> CurrencyDetail
+        {
+            get { return currencyDetail; }
+            set
+            {
+                currencyDetail = value;
+                RaisePropertyChangedEvent("CurrencyDetail");
+            }
+        }
+
+        private ObservableCollection<CurrencyViewModel> selectDetail;
+        public ObservableCollection<CurrencyViewModel> SelectDetail
+        {
+            get { return selectDetail; }
+            set
+            {
+                selectDetail = value;
+                RaisePropertyChangedEvent("SelectDetail");
+            }
+        }
+
+        private CurrencyViewModel selectedSymbol;
+        public CurrencyViewModel SelectedSymbol
+        {
+            get { return selectedSymbol; }
+            set
+            {
+                if (value == null)
+                    return;
+
+                selectedSymbol = value;
+                RaisePropertyChangedEvent("SymbolIsSelected");
+                RaisePropertyChangedEvent("SelectedSymbol");
+                ChangeSymbol();
+            }
+        }
+
+        private void ChangeSymbol()
+        {
+            if (SelectedSymbol != null)
+            {
+
+            }
+        }
+
+        public bool SymbolIsSelected
+        {
+            get { return SelectedSymbol != null; }
+        }
+
         public MainViewModel()
         {
-            CryptoDetail = new ObservableCollection<CryptoViewModel>();
+            CryptoDetail = new ObservableCollection<CurrencyViewModel>();
+            CurrencyDetail = new ObservableCollection<CurrencyViewModel>();
 
             Task.Run(() => Worker());
         }
@@ -35,29 +87,25 @@ namespace CryptoExchangeViewer.ViewModels
 
             while (true)
             {
-                //var result = await db.SelectTest2();
                 var result = db.select();
 
-                var ccount = cryptoDetail.Count;
-                var acount = result.Count();
-
-                if (cryptoDetail.Count < result.Count())
+                if (cryptoDetail.Count != result.Count())
                 {
-                    CryptoDetail = new ObservableCollection<CryptoViewModel>(result.Select(r => new CryptoViewModel(
-                        r.Target, r.Stand, r.MaxMarketName, r.MinMarketName, r.Percent)).ToList());
+                    CryptoDetail = new ObservableCollection<CurrencyViewModel>(result.Select(r => new CurrencyViewModel(
+                        r.targetCrypto, r.maxStandCurrency, r.maxMarketNation, r.maxMarketName, r.minMarketNation, r.minMarketName, r.percent)).ToList());
                 }
                 else
                 {
                     foreach (var data in result)
                     {
-                        CryptoViewModel model = null;
+                        CurrencyViewModel model = null;
 
                         foreach (var crypto in cryptoDetail)
                         {
-                            if (crypto.TargetCrypto == data.Target && crypto.StandCrypto == data.Stand)
+                            if (crypto.TargetCrypto == data.targetCrypto && crypto.MaxStandCurrency == data.maxStandCurrency)
                             {
                                 model = crypto;
-                                crypto.Percent = data.Percent;
+                                crypto.Percent = data.percent;
                                 break;
                             }
                         }
@@ -66,6 +114,39 @@ namespace CryptoExchangeViewer.ViewModels
                         //        cryptoDetail.Add(new CryptoViewModel(data.Target, data.Stand, data.MaxMarketName, data.MinMarketName, data.Percent));
                     }
                 }
+
+                var result2 = db.select2();
+
+                if (CurrencyDetail.Count != result2.Count())
+                {
+                    CurrencyDetail = new ObservableCollection<CurrencyViewModel>(result2.Select(r => new CurrencyViewModel(
+                        r.targetCrypto, r.maxStandCurrency, r.minStandCurrency, r.maxMarketName, r.maxMarketName, r.minMarketNation, r.minMarketName, r.percent)).ToList());
+                }
+                else
+                {
+                    foreach (var data in result2)
+                    {
+                        CurrencyViewModel model = null;
+
+                        foreach (var crypto in CurrencyDetail)
+                        {
+                            if (crypto.TargetCrypto == data.targetCrypto && crypto.MaxStandCurrency == data.maxStandCurrency && crypto.MinStandCurrency == data.minStandCurrency)
+                            {
+                                model = crypto;
+                                crypto.Percent = data.percent;
+                                crypto.MaxMarketNation = data.maxMarketNation;
+                                crypto.MaxMarketName = data.maxMarketName;
+                                crypto.MinMarketNation = data.minMarketNation;
+                                crypto.MinMarketName = data.minMarketName;
+                                break;
+                            }
+                        }
+
+                        //    if (model == null)
+                        //        cryptoDetail.Add(new CryptoViewModel(data.Target, data.Stand, data.MaxMarketName, data.MinMarketName, data.Percent));
+                    }
+                }
+
 
                 System.Threading.Thread.Sleep(3000);
             }

@@ -53,7 +53,7 @@ namespace CryptoExchangeViewer.Init
         {
             long Timestamp = Tickers["timestamp"];
             string symbol = Tickers["data"]["currency_pair"];    //***_&&&
-            double price = double.Parse(((string)Tickers["data"]["last"]).Trim('{').Trim('}'));
+            decimal price = decimal.Parse(((string)Tickers["data"]["last"]).Trim('{').Trim('}'));
 
             string Market = korbit.Market;
 
@@ -61,7 +61,7 @@ namespace CryptoExchangeViewer.Init
             
             string Target = symbol.Split('_')[0];
             string Stand = symbol.Split('_')[1];
-            double Price = price;
+            decimal Price = price;
 
             DBHelper.DBHelper.CryptoInputModel model = new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, Market, Date);
 
@@ -136,9 +136,9 @@ namespace CryptoExchangeViewer.Init
 
                 string[] coins = CoinSpliter(tick.Symbol);
 
-                double Price = (double)tick.Close;
-                double High = (double)tick.High;
-                double Low = (double)tick.Low;
+                decimal Price = (decimal)tick.Close;
+                decimal High = (decimal)tick.High;
+                decimal Low = (decimal)tick.Low;
 
                 DBHelper.DBHelper.CryptoInputModel model =
                     new DBHelper.DBHelper.CryptoInputModel(coins[0], coins[1], Price, huobi.Market, date);
@@ -186,7 +186,7 @@ namespace CryptoExchangeViewer.Init
         {
             string Target = Tick.Symbol.Split('-')[0];
             string Stand = Tick.Symbol.Split('-')[1];
-            double Price = (double)Tick.LastTradePrice;
+            decimal Price = (decimal)Tick.LastTradePrice;
             DateTime Date = Tick.Timestamp;
 
             DBHelper.DBHelper.CryptoInputModel model =
@@ -237,7 +237,7 @@ namespace CryptoExchangeViewer.Init
         {
             string Target = ticker.ProductCode.Split('_')[0];
             string Stand = ticker.ProductCode.Split('_')[1];
-            double Price = ticker.LatestPrice;
+            decimal Price = (decimal)ticker.LatestPrice;
             DateTime Date = ticker.Timestamp;
 
             DBHelper.DBHelper.CryptoInputModel model =
@@ -263,7 +263,7 @@ namespace CryptoExchangeViewer.Init
             {
                 string Target = tick.Symbol.Split('-')[0];
                 string Stand = tick.Symbol.Split('-')[1];
-                double Price = (double)tick.LastTradeRate;
+                decimal Price = (decimal)tick.LastTradeRate;
 
                 DBHelper.DBHelper.CryptoInputModel model =
                     new DBHelper.DBHelper.CryptoInputModel(Target, Stand, Price, bittrex.Market, Date);
@@ -318,7 +318,7 @@ namespace CryptoExchangeViewer.Init
                 //string Stand = tick.Symbol.Substring(mid);
 
                 string[] coins = CoinSpliter(tick.Symbol);
-                double Price = (double)tick.LastPrice;
+                decimal Price = (decimal)tick.LastPrice;
 
                 DBHelper.DBHelper.CryptoInputModel model =
                     new DBHelper.DBHelper.CryptoInputModel(coins[0], coins[1], Price, binance.Market, Date);
@@ -388,7 +388,14 @@ namespace CryptoExchangeViewer.Init
 
                     return coins;
                 }
+
+                int mid = coin.Length / 2;
+                coins[0] = coin.Substring(0, mid);
+                coins[1] = coin.Substring(mid);
             }
+
+            coins[0] = coins[0].ToUpper();
+            coins[1] = coins[1].ToUpper();
 
             return coins;
         }

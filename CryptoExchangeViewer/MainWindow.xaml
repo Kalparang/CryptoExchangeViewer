@@ -3,30 +3,101 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CryptoExchangeViewer" xmlns:viewmodels="clr-namespace:CryptoExchangeViewer.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        xmlns:local="clr-namespace:CryptoExchangeViewer" xmlns:viewmodels="clr-namespace:CryptoExchangeViewer.ViewModels" xmlns:controls="clr-namespace:CryptoExchangeViewer.UserControls" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="1922.562">
+        Title="MainWindow" Height="450" Width="1112.583">
     <Window.DataContext>
         <viewmodels:MainViewModel/>
     </Window.DataContext>
+    <Window.Resources>
+        <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
-        <ListView Grid.Row="0" Grid.RowSpan="2" Margin="5" ItemsSource="{Binding CryptoDetail}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="550"></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*"></RowDefinition>
+            <RowDefinition Height="2*">
+            </RowDefinition>
+            <RowDefinition Height="4*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <ListView Grid.Row="0" Grid.ColumnSpan="2" Margin="5" ItemsSource="{Binding CurrencyDetail}">
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn Width="60" Header="Target"
+                        DisplayMemberBinding="{Binding TargetCrypto}"/>
+                        <GridViewColumn Width="60" Header="MaxStand"
+                        DisplayMemberBinding="{Binding MaxStandCurrency}"/>
+                        <GridViewColumn Width="60" Header="MinStand"
+                        DisplayMemberBinding="{Binding MinStandCurrency}"/>
+                        <GridViewColumn Width="60" Header="MaxNation"
+                        DisplayMemberBinding="{Binding MaxMarketNation}"/>
+                        <GridViewColumn Width="60" Header="MaxMarket"
+                        DisplayMemberBinding="{Binding MaxMarketName}"/>
+                        <GridViewColumn Width="60" Header="MinNation"
+                        DisplayMemberBinding="{Binding MinMarketNation}"/>
+                        <GridViewColumn Width="60" Header="MinMarket"
+                        DisplayMemberBinding="{Binding MinMarketName}"/>
+                        <GridViewColumn Width="60" Header="Percent"
+                        DisplayMemberBinding="{Binding Percent}"/>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <ListView Grid.Row="1" Margin="5" ItemsSource="{Binding CurrencyDetail}" SelectedItem="{Binding SelectedSymbol}">
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn Width="60" Header="Target"
+                        DisplayMemberBinding="{Binding TargetCrypto}"/>
+                        <GridViewColumn Width="60" Header="MaxStand"
+                        DisplayMemberBinding="{Binding MaxStandCurrency}"/>
+                        <GridViewColumn Width="60" Header="MinStand"
+                        DisplayMemberBinding="{Binding MinStandCurrency}"/>
+                        <GridViewColumn Width="60" Header="MaxNation"
+                        DisplayMemberBinding="{Binding MaxMarketNation}"/>
+                        <GridViewColumn Width="60" Header="MaxMarket"
+                        DisplayMemberBinding="{Binding MaxMarketName}"/>
+                        <GridViewColumn Width="60" Header="MinNation"
+                        DisplayMemberBinding="{Binding MinMarketNation}"/>
+                        <GridViewColumn Width="60" Header="MinMarket"
+                        DisplayMemberBinding="{Binding MinMarketName}"/>
+                        <GridViewColumn Width="60" Header="Percent"
+                        DisplayMemberBinding="{Binding Percent}"/>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <ListView Grid.Row="2" Margin="5" ItemsSource="{Binding CryptoDetail}" SelectedItem="{Binding SelectedSymbol}">
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
                         <GridViewColumn Width="60" Header="Target"
                         DisplayMemberBinding="{Binding TargetCrypto}"/>
                         <GridViewColumn Width="60" Header="Stand"
-                        DisplayMemberBinding="{Binding StandCrypto}"/>
+                        DisplayMemberBinding="{Binding MaxStandCurrency}"/>
+                        <GridViewColumn Width="60" Header="MaxNation"
+                         DisplayMemberBinding="{Binding MaxMarketNation}"/>
                         <GridViewColumn Width="60" Header="MaxMarket"
                         DisplayMemberBinding="{Binding MaxMarketName}"/>
+                        <GridViewColumn Width="60" Header="MinNation"
+                        DisplayMemberBinding="{Binding MinMarketNation}"/>
                         <GridViewColumn Width="60" Header="MinMarket"
                         DisplayMemberBinding="{Binding MinMarketName}"/>
-                        <GridViewColumn Width="100" Header="Percent"
+                        <GridViewColumn Width="60" Header="Percent"
                         DisplayMemberBinding="{Binding Percent}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
         </ListView>
+
+        <controls:SymbolUserControl Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" Visibility="{Binding SymbolIsSelected, Converter={StaticResource BoolToVis}}"></controls:SymbolUserControl>
     </Grid>
 </Window>
