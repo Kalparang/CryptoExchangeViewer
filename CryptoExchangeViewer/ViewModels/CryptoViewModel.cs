@@ -79,6 +79,58 @@ namespace CryptoExchangeViewer.ViewModels
     //    }
     //}
 
+    public class BanViewModel : ObservableObject
+    {
+        private string type;
+        public string Type
+        {
+            get { return type; }
+            set
+            {
+                type = value;
+                RaisePropertyChangedEvent("Type");
+            }
+        }
+
+        private string name;
+        public string Name
+        {
+            get { return name; }
+            set
+            {
+                name = value;
+                RaisePropertyChangedEvent("Name");
+            }
+        }
+
+        public BanViewModel(int Type, string Name)
+        {
+            string type;
+
+            switch (Type)
+            {
+                case 1:
+                    type = "거래소";
+                    break;
+                case 2:
+                    type = "나라";
+                    break;
+                default:
+                    type = "";
+                    break;
+            }
+
+            this.type = type;
+            this.name = Name;
+        }
+
+        public BanViewModel(string Type, string Name)
+        {
+            this.type = Type;
+            this.name = Name;
+        }
+    }
+
     public class CurrencyViewModel : ObservableObject
     {
         private string targetCrypto;
@@ -202,7 +254,7 @@ namespace CryptoExchangeViewer.ViewModels
             }
         }
 
-        public CurrencyViewModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, double percent)
+        public CurrencyViewModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice, double percent)
         {
             this.targetCrypto = target;
             this.maxStandCurrency = maxStand;
@@ -211,10 +263,12 @@ namespace CryptoExchangeViewer.ViewModels
             this.maxMarketName = maxmarket;
             this.minMarketNation = minnation;
             this.minMarketName = minmarket;
+            this.targetPrice = TargetPrice;
+            this.maxStandPrice = StandPrice;
             this.percent = percent;
         }
 
-        public CurrencyViewModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, double percent)
+        public CurrencyViewModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice, double percent)
         {
             this.targetCrypto = target;
             this.maxStandCurrency = maxStand;
@@ -223,6 +277,8 @@ namespace CryptoExchangeViewer.ViewModels
             this.maxMarketName = maxmarket;
             this.minMarketNation = minnation;
             this.minMarketName = minmarket;
+            this.targetPrice = TargetPrice;
+            this.maxStandPrice = StandPrice;
             this.percent = percent;
         }
     }

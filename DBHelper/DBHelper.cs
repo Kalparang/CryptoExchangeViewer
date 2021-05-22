@@ -48,7 +48,7 @@ namespace DBHelper
 
         public class CurrencyExchangeModel
         {
-            public CurrencyExchangeModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, double percent)
+            public CurrencyExchangeModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice, double percent)
             {
                 this.targetCrypto = target;
                 this.maxStandCurrency = maxStand;
@@ -57,10 +57,12 @@ namespace DBHelper
                 this.maxMarketName = maxmarket;
                 this.minMarketNation = minnation;
                 this.minMarketName = minmarket;
+                this.TargetPrice = TargetPrice;
+                this.StandPrice = StandPrice;
                 this.percent = percent;
             }
 
-            public CurrencyExchangeModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, double percent)
+            public CurrencyExchangeModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice, double percent)
             {
                 this.targetCrypto = target;
                 this.maxStandCurrency = maxStand;
@@ -69,6 +71,8 @@ namespace DBHelper
                 this.maxMarketName = maxmarket;
                 this.minMarketNation = minnation;
                 this.minMarketName = minmarket;
+                this.TargetPrice = TargetPrice;
+                this.StandPrice = StandPrice;
                 this.percent = percent;
             }
 
@@ -79,6 +83,8 @@ namespace DBHelper
             public string maxMarketName;
             public string minMarketNation;
             public string minMarketName;
+            public decimal TargetPrice;
+            public decimal StandPrice;
             public double percent;
         }
 
@@ -177,18 +183,28 @@ namespace DBHelper
               `Type` INT NOT NULL,
               PRIMARY KEY (`Name`));
 
+            CREATE VIEW IF NOT EXISTS BanMarketList AS
+            SELECT Name FROM BlackList WHERE Type=1;
+
+            CREATE VIEW IF NOT EXISTS BanNationList AS
+            SELECT Name FROM BlackList WHERE Type=2;
+
+            CREATE VIEW IF NOT EXISTS LastDatas2 AS
+            SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName FROM
+            (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
+            FROM MarketDetail GROUP BY Target_Coin, Stand_Coin, MarketName) A
+            INNER JOIN MarketList B on A.MarketName=B.MarketName;
+
             CREATE VIEW IF NOT EXISTS LastDatas AS
-            SELECT * FROM
-            (SELECT ROWID, MAX(date) AS Date, target_coin, stand_coin, Price, marketlist_maketname AS MarketName
-            FROM marketdetail GROUP BY target_coin, stand_coin, MarketName);
+            SELECT * FROM LastDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
             
             CREATE VIEW IF NOT EXISTS MinPrices AS
-            SELECT A.Date, A.Target_Coin, A.Stand_Coin, MIN(A.Price) AS Price, B.Nation, A.MarketName
-            FROM LastDatas A inner join marketlist B on A.MarketName=B.MarketName GROUP BY A.Target_Coin, A.Stand_Coin;
+            SELECT Date, Target_Coin, Stand_Coin, MIN(Price) AS Price, Nation, MarketName
+            FROM LastDatas GROUP BY Target_Coin, Stand_Coin;
 
             CREATE VIEW IF NOT EXISTS MaxPrices AS
-            SELECT A.Date, A.Target_Coin, A.Stand_Coin, MAX(A.Price) AS Price, B.Nation, A.MarketName
-            FROM LastDatas A inner join marketlist B on A.MarketName=B.MarketName GROUP BY A.Target_Coin, A.Stand_Coin;
+            SELECT Date, Target_Coin, Stand_Coin, MAX(Price) AS Price, Nation, MarketName
+            FROM LastDatas GROUP BY Target_Coin, Stand_Coin;
 
             CREATE VIEW IF NOT EXISTS CryptoExchange AS
             SELECT A.Date AS Date, A.Target_Coin, A.Stand_Coin, A.Nation AS MaxNation, A.MarketName AS MaxMarketName,
@@ -202,25 +218,21 @@ namespace DBHelper
             GROUP BY Target_Currency, Stand_Currency;
 
             CREATE VIEW IF NOT EXISTS CurrencyList AS
-            SELECT * FROM (
-            SELECT MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
-            FROM MarketDetail WHERE Stand_Coin IN (
+            SELECT * FROM LastDatas WHERE Stand_Coin IN (
             SELECT DISTINCT(Target_Currency) FROM ExchangeInfo)
-            GROUP BY Target_Coin, Stand_Coin, MarketName);
+            GROUP BY Target_Coin, Stand_Coin, MarketName;
 
             CREATE VIEW IF NOT EXISTS KRWList AS
-            SELECT a.Date, a.Target_Coin, a.Stand_Coin, a.Price, a.MarketName, a.Price * b.Price AS KRW
+            SELECT a.Date, a.Target_Coin, a.Stand_Coin, a.Price, a.Nation, a.MarketName, a.Price * b.Price AS KRW
             FROM CurrencyList a INNER JOIN LastExchangeInfo b ON a.stand_coin = b.target_currency;
 
             CREATE VIEW IF NOT EXISTS MinKRWList AS
-            SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, A.MarketName, MIN(A.KRW) AS KRW
-            FROM KRWList A
-            INNER JOIN MarketList B ON A.MarketName=B.MarketName GROUP BY Target_Coin;
+            SELECT Date, Target_Coin, Stand_Coin, Price, Nation, MarketName, MIN(KRW) AS KRW
+            FROM KRWList GROUP BY Target_Coin;
 
             CREATE VIEW IF NOT EXISTS MaxKRWList AS
-             SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, A.MarketName, MAX(A.KRW) AS KRW
-            FROM KRWList A
-            INNER JOIN MarketList B ON A.MarketName=B.MarketName GROUP BY Target_Coin;
+             SELECT Date, Target_Coin, Stand_Coin, Price, Nation, MarketName, MAX(KRW) AS KRW
+            FROM KRWList GROUP BY Target_Coin;
 
             CREATE VIEW IF NOT EXISTS CurrencyExchange AS
             SELECT Min.Date, Min.Target_Coin, Max.Stand_Coin AS MaxStand_Coin, Min.Stand_Coin AS MinStand_Coin,
@@ -381,16 +393,22 @@ namespace DBHelper
 
             while (rdr.Read())
             {
-                string Target = ((string)rdr["Target_Coin"]);
-                string Stand = ((string)rdr["Stand_Coin"]);
-                string MaxNation = ((string)rdr["MaxNation"]);
-                string MaxMarketName = (string)rdr["MaxMarketName"];
-                string MinNation = ((string)rdr["MinNation"]);
-                string MinMarketName = (string)rdr["MinMarketName"];
-                double Percent = (double)rdr["Percent"];
-                //string Date = (string)rdr["Date"];
+                try
+                {
+                    string Target = ((string)rdr["Target_Coin"]);
+                    string Stand = ((string)rdr["Stand_Coin"]);
+                    string MaxNation = ((string)rdr["MaxNation"]);
+                    string MaxMarketName = (string)rdr["MaxMarketName"];
+                    string MinNation = ((string)rdr["MinNation"]);
+                    string MinMarketName = (string)rdr["MinMarketName"];
+                    decimal MaxPrice = (decimal)(double)rdr["MaxPrice"];    //DB에 Decimal로 지정했는데 반환은 Double로 옴. 머선????
+                    decimal MinPrice = (decimal)(double)rdr["MinPrice"];
+                    double Percent = (double)rdr["Percent"];
+                    //string Date = (string)rdr["Date"];
 
-                model.Add(new CurrencyExchangeModel(Target, Stand, MaxNation, MaxMarketName, MinNation, MinMarketName, Percent));
+                    model.Add(new CurrencyExchangeModel(Target, Stand, MaxNation, MaxMarketName, MinNation, MinMarketName, MaxPrice, MinPrice, Percent));
+                }
+                catch (InvalidCastException e) { }
             }
 
             return model;
@@ -410,16 +428,22 @@ namespace DBHelper
 
             while (rdr.Read())
             {
-                string Target = (string)rdr["Target_Coin"];
-                string MaxStand = (string)rdr["MaxStand_Coin"];
-                string MinStand = (string)rdr["MinStand_Coin"];
-                string MaxNation = (string)rdr["MaxNation"];
-                string MaxMarket = (string)rdr["MaxMarketName"];
-                string MinNation = (string)rdr["MinNation"];
-                string MinMarket = (string)rdr["MinMarketName"];
-                double Percent = (double)rdr["Percent"];
+                try
+                {
+                    string Target = (string)rdr["Target_Coin"];
+                    string MaxStand = (string)rdr["MaxStand_Coin"];
+                    string MinStand = (string)rdr["MinStand_Coin"];
+                    string MaxNation = (string)rdr["MaxNation"];
+                    string MaxMarket = (string)rdr["MaxMarketName"];
+                    string MinNation = (string)rdr["MinNation"];
+                    string MinMarket = (string)rdr["MinMarketName"];
+                    decimal MaxPrice = (decimal)rdr["MaxPrice"];    //안니;;; 얘는 Decimal로 반환됨;;
+                    decimal MinPrice = (decimal)rdr["MinPrice"];
+                    double Percent = (double)rdr["Percent"];
 
-                model.Add(new CurrencyExchangeModel(Target, MaxStand, MinStand, MaxNation, MaxMarket, MinNation, MinMarket, Percent));
+                    model.Add(new CurrencyExchangeModel(Target, MaxStand, MinStand, MaxNation, MaxMarket, MinNation, MinMarket, MaxPrice, MinPrice, Percent));
+                }
+                catch (Exception e) { }
             }
             return model;
         }
@@ -443,6 +467,8 @@ namespace DBHelper
                 string Stand = Coins[1];
                 string MaxMarketName = (string)rdr["MaxMarketName"];
                 string MinMarketName = (string)rdr["MinMarketName"];
+                decimal MaxPrice = (decimal)rdr["MaxPrice"];
+                decimal MinPrice = (decimal)rdr["MinPrice"];
                 double Percent = (double)rdr["Percent"];
                 //string Date = (string)rdr["Date"];
 
@@ -455,6 +481,37 @@ namespace DBHelper
         private void Conn_Update(object sender, UpdateEventArgs e)
         {
             throw new NotImplementedException();
+        }
+
+        public void AddBan(int Type, string BanName)
+        {
+            if (conn.State != System.Data.ConnectionState.Open)
+                return;
+
+            string sql = $"INSERT INTO BlackList VALUES (\"{BanName}\", {Type});";
+
+            SQLiteCommand command = new SQLiteCommand(sql, conn);
+
+            try
+            { int result = command.ExecuteNonQuery(); }
+            catch(SQLiteException sqe)
+            { if(sqe.ErrorCode != 19) throw sqe; }
+        }
+
+        public void SubBan(int Type, string Name)
+        {
+            if (conn.State != System.Data.ConnectionState.Open)
+                return;
+
+            string sql = $"DELETE FROM BlackList WHERE Name={Name} AND Type={Type};";
+
+            SQLiteCommand command = new SQLiteCommand(sql, conn);
+
+            try
+            { int result = command.ExecuteNonQuery(); }
+            catch (SQLiteException sqe)
+            { }
+
         }
     }
 }

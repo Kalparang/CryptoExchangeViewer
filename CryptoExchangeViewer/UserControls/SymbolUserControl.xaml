@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:CryptoExchangeViewer.UserControls"
+             xmlns:local="clr-namespace:CryptoExchangeViewer.UserControls" xmlns:viewmodels="clr-namespace:CryptoExchangeViewer.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
              mc:Ignorable="d" 
              Name="SymbolControl"
              d:DesignHeight="450" d:DesignWidth="800">
@@ -11,18 +11,33 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </UserControl.Resources>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition MinWidth="110" Width="110"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="100"></RowDefinition>
-            <RowDefinition Height="3*"></RowDefinition>
+            <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
 
         <TextBlock Padding="10 10 10 0">
-            <Run FontSize="18" FontWeight="Bold" Text="{Binding SelectedSymbol.TargetCrypto}" ></Run>
-            <Run FontSize="18" FontWeight="Bold" Text="{Binding SelectedSymbol.StandCrypto}" ></Run>
-            <Run FontSize="14" Text="{Binding SelectedSymbol.Percent, StringFormat={} {0:N8}}" ></Run>
+            <Run FontSize="15" Text="{Binding SelectedSymbol.TargetCrypto, StringFormat=구매 : {0}}" ></Run>
+            <Run FontSize="15" Text="{Binding SelectedSymbol.MaxStandCurrency, StringFormat=지불 : {0}}" ></Run>
+            <Run FontSize="15" Text="{Binding SelectedSymbol.MinStandCurrency}" ></Run>
+            <LineBreak></LineBreak>
+            <Run FontSize="15" Text="{Binding SelectedSymbol.MaxMarketNation, StringFormat=최고가국가 : {0}}" ></Run>
+            <Run FontSize="15" Text="{Binding SelectedSymbol.MaxMarketName, StringFormat=최고가거래소 : {0}}" ></Run>
+            <LineBreak></LineBreak>
+            <Run FontSize="15" Text="{Binding SelectedSymbol.MinMarketNation, StringFormat=최소가국가 : {0}}" ></Run>
+            <Run FontSize="15" Text="{Binding SelectedSymbol.MinMarketName, StringFormat=최소가거래소 : {0}}" ></Run>
+            <LineBreak></LineBreak>
+            <Run FontSize="14" Text="{Binding SelectedSymbol.TargetPrice, StringFormat=최고가 : {0}}" ></Run>
+            <Run FontSize="14" Text="{Binding SelectedSymbol.MaxStandPrice, StringFormat=최소가 : {0}}" ></Run>
+            <Run FontSize="14" Text="{Binding SelectedSymbol.MinStandPrice, StringFormat={} {0}}" ></Run>
+            <Run FontSize="14" Text="{Binding SelectedSymbol.Percent, StringFormat=차익률 : {0:N5}}" ></Run>
         </TextBlock>
 
-        <ListView Grid.Row="1" Margin="5" ItemsSource="{Binding SelectDetail}">
+        <ListView Grid.Row="1" Grid.ColumnSpan="2" Margin="5" ItemsSource="{Binding SelectDetail}">
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
@@ -46,5 +61,13 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <Button Name="MaxNationBan" Content="최고가국가밴" Grid.Column="1" HorizontalAlignment="Left" Margin="5" VerticalAlignment="Top" Width="100"
+                Command="{Binding BanHighestNation}"/>
+        <Button Name="MaxMarketBan" Content="최고가거래소밴" Grid.Column="1" HorizontalAlignment="Left" Margin="5,25,0,0" VerticalAlignment="Top" Width="100"
+                Command="{Binding BanHighestMarket}"/>
+        <Button Name="MinNationBan" Content="최소가국가밴" Grid.Column="1" HorizontalAlignment="Left" Margin="5,45,0,0" VerticalAlignment="Top" Width="100"
+                Command="{Binding BanLowestNation}"/>
+        <Button Name="MinMarketBan" Content="최소가거래소밴" Grid.Column="1" HorizontalAlignment="Left" Margin="5,65,0,0" VerticalAlignment="Top" Width="100"
+                Command="{Binding BanLowestMarket}"/>
     </Grid>
 </UserControl>

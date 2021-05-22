@@ -1,0 +1,29 @@
+﻿<Window x:Class="CryptoExchangeViewer.UserControls.BanListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CryptoExchangeViewer.UserControls" xmlns:viewmodels="clr-namespace:CryptoExchangeViewer.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        mc:Ignorable="d"
+        Title="BanListWindow" Height="450" Width="200">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="30"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Button Content="차단 해제" Grid.Row="1" HorizontalAlignment="Right" Margin="5" VerticalAlignment="Top" Width="75"
+                Command=""/>
+        <ListView Grid.Row="0" Margin="5" ItemsSource="{Binding BanList}">
+            <ListView.View>
+                <GridView>
+                    <GridView.Columns>
+                        <GridViewColumn Width="60" Header="종류"
+                        DisplayMemberBinding="{Binding Type}"/>
+                        <GridViewColumn Width="60" Header="이름"
+                        DisplayMemberBinding="{Binding Name}"/>
+                    </GridView.Columns>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</Window>

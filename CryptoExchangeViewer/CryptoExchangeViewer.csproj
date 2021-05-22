@@ -67,7 +67,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MVVM\DelegateCommand.cs" />
     <Compile Include="MVVM\ObservableObject.cs" />
+    <Compile Include="UserControls\BanListWindow.xaml.cs">
+      <DependentUpon>BanListWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\SymbolUserControl.xaml.cs">
       <DependentUpon>SymbolUserControl.xaml</DependentUpon>
     </Compile>
@@ -86,6 +90,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="UserControls\BanListWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\SymbolUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

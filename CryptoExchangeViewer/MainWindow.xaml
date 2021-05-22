@@ -16,8 +16,9 @@
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="550"></ColumnDefinition>
+            <ColumnDefinition MinWidth="500" Width="500"></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition MinWidth="150" Width="150"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"></RowDefinition>
@@ -29,11 +30,11 @@
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="60" Header="Target"
+                        <GridViewColumn Width="40" Header="Target"
                         DisplayMemberBinding="{Binding TargetCrypto}"/>
-                        <GridViewColumn Width="60" Header="MaxStand"
+                        <GridViewColumn Width="40" Header="MaxStand"
                         DisplayMemberBinding="{Binding MaxStandCurrency}"/>
-                        <GridViewColumn Width="60" Header="MinStand"
+                        <GridViewColumn Width="40" Header="MinStand"
                         DisplayMemberBinding="{Binding MinStandCurrency}"/>
                         <GridViewColumn Width="60" Header="MaxNation"
                         DisplayMemberBinding="{Binding MaxMarketNation}"/>
@@ -43,8 +44,8 @@
                         DisplayMemberBinding="{Binding MinMarketNation}"/>
                         <GridViewColumn Width="60" Header="MinMarket"
                         DisplayMemberBinding="{Binding MinMarketName}"/>
-                        <GridViewColumn Width="60" Header="Percent"
-                        DisplayMemberBinding="{Binding Percent}"/>
+                        <GridViewColumn Width="40" Header="Percent"
+                        DisplayMemberBinding="{Binding Percent, StringFormat={}{0:0.##}}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
@@ -54,11 +55,11 @@
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="60" Header="Target"
+                        <GridViewColumn Width="40" Header="Target"
                         DisplayMemberBinding="{Binding TargetCrypto}"/>
-                        <GridViewColumn Width="60" Header="MaxStand"
+                        <GridViewColumn Width="40" Header="MaxStand"
                         DisplayMemberBinding="{Binding MaxStandCurrency}"/>
-                        <GridViewColumn Width="60" Header="MinStand"
+                        <GridViewColumn Width="40" Header="MinStand"
                         DisplayMemberBinding="{Binding MinStandCurrency}"/>
                         <GridViewColumn Width="60" Header="MaxNation"
                         DisplayMemberBinding="{Binding MaxMarketNation}"/>
@@ -68,8 +69,8 @@
                         DisplayMemberBinding="{Binding MinMarketNation}"/>
                         <GridViewColumn Width="60" Header="MinMarket"
                         DisplayMemberBinding="{Binding MinMarketName}"/>
-                        <GridViewColumn Width="60" Header="Percent"
-                        DisplayMemberBinding="{Binding Percent}"/>
+                        <GridViewColumn Width="40" Header="Percent"
+                        DisplayMemberBinding="{Binding Percent, StringFormat={}{0:0.##}}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
@@ -79,9 +80,9 @@
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="60" Header="Target"
+                        <GridViewColumn Width="40" Header="Target"
                         DisplayMemberBinding="{Binding TargetCrypto}"/>
-                        <GridViewColumn Width="60" Header="Stand"
+                        <GridViewColumn Width="40" Header="Stand"
                         DisplayMemberBinding="{Binding MaxStandCurrency}"/>
                         <GridViewColumn Width="60" Header="MaxNation"
                          DisplayMemberBinding="{Binding MaxMarketNation}"/>
@@ -91,13 +92,15 @@
                         DisplayMemberBinding="{Binding MinMarketNation}"/>
                         <GridViewColumn Width="60" Header="MinMarket"
                         DisplayMemberBinding="{Binding MinMarketName}"/>
-                        <GridViewColumn Width="60" Header="Percent"
-                        DisplayMemberBinding="{Binding Percent}"/>
+                        <GridViewColumn Width="40" Header="Percent"
+                        DisplayMemberBinding="{Binding Percent, StringFormat={}{0:0.##}}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
         </ListView>
 
-        <controls:SymbolUserControl Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" Visibility="{Binding SymbolIsSelected, Converter={StaticResource BoolToVis}}"></controls:SymbolUserControl>
+        <controls:SymbolUserControl Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" Grid.ColumnSpan="2" Visibility="{Binding SymbolIsSelected, Converter={StaticResource BoolToVis}}"></controls:SymbolUserControl>
+        <Button Name="BanViewButton" Content="차단 목록" Grid.Column="2" HorizontalAlignment="Left" Margin="10.2,10,0,0" VerticalAlignment="Top" Width="75"
+                Command="{Binding BanListCommand}"/>
     </Grid>
 </Window>
