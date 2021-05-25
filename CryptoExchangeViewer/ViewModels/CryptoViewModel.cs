@@ -131,6 +131,86 @@ namespace CryptoExchangeViewer.ViewModels
         }
     }
 
+    public class ExchangeViewModel : ObservableObject
+    {
+        public ExchangeViewModel(string target, decimal cny, decimal eur, decimal hkd, decimal jpy, decimal usd)
+        {
+            this.target = target;
+            this.cny = cny;
+            this.eur = eur;
+            this.hkd = hkd;
+            this.jpy = jpy;
+            this.usd = usd;
+        }
+        
+        private string target;
+        public string Target
+        {
+            get { return target; }
+            set
+            {
+                target = value;
+                RaisePropertyChangedEvent("Target");
+            }
+        }
+
+        private decimal cny;
+        public decimal CNY
+        {
+            get { return cny; }
+            set
+            {
+                cny = value;
+                RaisePropertyChangedEvent("CNY");
+            }
+        }
+
+        private decimal eur;
+        public decimal EUR
+        {
+            get { return eur; }
+            set
+            {
+                eur = value;
+                RaisePropertyChangedEvent("EUR");
+            }
+        }
+
+        private decimal hkd;
+        public decimal HKD
+        {
+            get { return hkd; }
+            set
+            {
+                hkd = value;
+                RaisePropertyChangedEvent("HKD");
+            }
+        }
+
+        private decimal jpy;
+        public decimal JPY
+        {
+            get { return jpy; }
+            set
+            {
+                jpy = value;
+                RaisePropertyChangedEvent("JPY");
+            }
+        }
+
+        private decimal usd;
+        public decimal USD
+        {
+            get { return usd; }
+            set
+            {
+                usd = value;
+                RaisePropertyChangedEvent("USD");
+            }
+        }
+    }
+
+
     public class CurrencyViewModel : ObservableObject
     {
         private string targetCrypto;
@@ -254,7 +334,80 @@ namespace CryptoExchangeViewer.ViewModels
             }
         }
 
-        public CurrencyViewModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice, double percent)
+        private double oneMin;
+        public double OneMin
+        {
+            get { return oneMin; }
+            set
+            {
+                oneMin = value;
+                RaisePropertyChangedEvent("OneMin");
+            }
+        }
+
+        private double fiveMin;
+        public double FiveMin
+        {
+            get { return fiveMin; }
+            set
+            {
+                fiveMin = value;
+                RaisePropertyChangedEvent("FiveMin");
+            }
+        }
+
+        private double oneHour;
+        public double OneHour
+        {
+            get { return oneHour; }
+            set
+            {
+                oneHour = value;
+                RaisePropertyChangedEvent("OneHour");
+            }
+        }
+
+        private double oneDay;
+        public double OneDay
+        {
+            get { return oneDay; }
+            set
+            {
+                oneDay = value;
+                RaisePropertyChangedEvent("OneDay");
+            }
+        }
+
+        public CurrencyViewModel(string target, string Stand, string nation, string market, decimal Price)
+        {
+            this.targetCrypto = target;
+            this.maxStandCurrency = Stand;
+            this.minStandCurrency = "";
+            this.maxMarketNation = nation;
+            this.maxMarketName = market;
+            this.minMarketNation = "";
+            this.minMarketName = "";
+            this.targetPrice = Price;
+            this.maxStandPrice = 0;
+            this.percent = 0;
+        }
+
+        public CurrencyViewModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice)
+        {
+            this.targetCrypto = target;
+            this.maxStandCurrency = maxStand;
+            this.minStandCurrency = "";
+            this.maxMarketNation = maxnation;
+            this.maxMarketName = maxmarket;
+            this.minMarketNation = minnation;
+            this.minMarketName = minmarket;
+            this.targetPrice = TargetPrice;
+            this.maxStandPrice = StandPrice;
+            this.percent = 0;
+        }
+
+        public CurrencyViewModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice,
+            double percent, double oneMin, double fiveMin, double oneHour, double oneDay)
         {
             this.targetCrypto = target;
             this.maxStandCurrency = maxStand;
@@ -266,9 +419,14 @@ namespace CryptoExchangeViewer.ViewModels
             this.targetPrice = TargetPrice;
             this.maxStandPrice = StandPrice;
             this.percent = percent;
+            this.oneMin = oneMin;
+            this.fiveMin = fiveMin;
+            this.oneHour = oneHour;
+            this.oneDay = oneDay;
         }
 
-        public CurrencyViewModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice, double percent)
+        public CurrencyViewModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice,
+            double percent, double oneMin, double fiveMin, double oneHour, double oneDay)
         {
             this.targetCrypto = target;
             this.maxStandCurrency = maxStand;
@@ -280,6 +438,10 @@ namespace CryptoExchangeViewer.ViewModels
             this.targetPrice = TargetPrice;
             this.maxStandPrice = StandPrice;
             this.percent = percent;
+            this.oneMin = oneMin;
+            this.fiveMin = fiveMin;
+            this.oneHour = oneHour;
+            this.oneDay = oneDay;
         }
     }
 }

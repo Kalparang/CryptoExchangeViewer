@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CryptoExchangeViewer" xmlns:viewmodels="clr-namespace:CryptoExchangeViewer.ViewModels" xmlns:controls="clr-namespace:CryptoExchangeViewer.UserControls" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="1112.583">
+        Title="CryptoExchangeViewr" Height="450" Width="1112.583">
     <Window.DataContext>
         <viewmodels:MainViewModel/>
     </Window.DataContext>
@@ -16,9 +16,9 @@
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="500" Width="500"></ColumnDefinition>
+            <ColumnDefinition MinWidth="650" Width="650"></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition MinWidth="150" Width="150"></ColumnDefinition>
+            <ColumnDefinition MinWidth="100" Width="100"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"></RowDefinition>
@@ -26,26 +26,22 @@
             </RowDefinition>
             <RowDefinition Height="4*"></RowDefinition>
         </Grid.RowDefinitions>
-        <ListView Grid.Row="0" Grid.ColumnSpan="2" Margin="5" ItemsSource="{Binding CurrencyDetail}">
+        <ListView Name="ExchangeGrid" Grid.Row="0" Grid.ColumnSpan="2" Margin="5" ItemsSource="{Binding ExchangeList}">
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="40" Header="Target"
-                        DisplayMemberBinding="{Binding TargetCrypto}"/>
-                        <GridViewColumn Width="40" Header="MaxStand"
-                        DisplayMemberBinding="{Binding MaxStandCurrency}"/>
-                        <GridViewColumn Width="40" Header="MinStand"
-                        DisplayMemberBinding="{Binding MinStandCurrency}"/>
-                        <GridViewColumn Width="60" Header="MaxNation"
-                        DisplayMemberBinding="{Binding MaxMarketNation}"/>
-                        <GridViewColumn Width="60" Header="MaxMarket"
-                        DisplayMemberBinding="{Binding MaxMarketName}"/>
-                        <GridViewColumn Width="60" Header="MinNation"
-                        DisplayMemberBinding="{Binding MinMarketNation}"/>
-                        <GridViewColumn Width="60" Header="MinMarket"
-                        DisplayMemberBinding="{Binding MinMarketName}"/>
-                        <GridViewColumn Width="40" Header="Percent"
-                        DisplayMemberBinding="{Binding Percent, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="100" Header=""
+                         DisplayMemberBinding="{Binding Target}"/>
+                        <GridViewColumn Width="100" Header="CNY"
+                        DisplayMemberBinding="{Binding CNY}"/>
+                        <GridViewColumn Width="100" Header="EUR"
+                        DisplayMemberBinding="{Binding EUR}"/>
+                        <GridViewColumn Width="100" Header="HKD"
+                        DisplayMemberBinding="{Binding HKD}"/>
+                        <GridViewColumn Width="100" Header="JPY"
+                        DisplayMemberBinding="{Binding JPY}"/>
+                        <GridViewColumn Width="100" Header="USD"
+                        DisplayMemberBinding="{Binding USD}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
@@ -55,22 +51,30 @@
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="40" Header="Target"
+                        <GridViewColumn Width="50" Header="구매"
                         DisplayMemberBinding="{Binding TargetCrypto}"/>
-                        <GridViewColumn Width="40" Header="MaxStand"
+                        <GridViewColumn Width="50" Header="고화폐"
                         DisplayMemberBinding="{Binding MaxStandCurrency}"/>
-                        <GridViewColumn Width="40" Header="MinStand"
+                        <GridViewColumn Width="50" Header="저화폐"
                         DisplayMemberBinding="{Binding MinStandCurrency}"/>
-                        <GridViewColumn Width="60" Header="MaxNation"
+                        <GridViewColumn Width="70" Header="고국가"
                         DisplayMemberBinding="{Binding MaxMarketNation}"/>
-                        <GridViewColumn Width="60" Header="MaxMarket"
+                        <GridViewColumn Width="60" Header="고거래소"
                         DisplayMemberBinding="{Binding MaxMarketName}"/>
-                        <GridViewColumn Width="60" Header="MinNation"
+                        <GridViewColumn Width="70" Header="저국가"
                         DisplayMemberBinding="{Binding MinMarketNation}"/>
-                        <GridViewColumn Width="60" Header="MinMarket"
+                        <GridViewColumn Width="60" Header="저거래소"
                         DisplayMemberBinding="{Binding MinMarketName}"/>
-                        <GridViewColumn Width="40" Header="Percent"
+                        <GridViewColumn Width="40" Header="%"
                         DisplayMemberBinding="{Binding Percent, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="40" Header="1m"
+                        DisplayMemberBinding="{Binding OneMin, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="40" Header="5m"
+                        DisplayMemberBinding="{Binding FiveMin, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="40" Header="1H"
+                        DisplayMemberBinding="{Binding OneHour, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="40" Header="1D"
+                        DisplayMemberBinding="{Binding OneDay, StringFormat={}{0:0.##}}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>
@@ -80,20 +84,28 @@
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="40" Header="Target"
+                        <GridViewColumn Width="50" Header="구매"
                         DisplayMemberBinding="{Binding TargetCrypto}"/>
-                        <GridViewColumn Width="40" Header="Stand"
+                        <GridViewColumn Width="50" Header="지불"
                         DisplayMemberBinding="{Binding MaxStandCurrency}"/>
-                        <GridViewColumn Width="60" Header="MaxNation"
+                        <GridViewColumn Width="70" Header="고국가"
                          DisplayMemberBinding="{Binding MaxMarketNation}"/>
-                        <GridViewColumn Width="60" Header="MaxMarket"
+                        <GridViewColumn Width="60" Header="고거래소"
                         DisplayMemberBinding="{Binding MaxMarketName}"/>
-                        <GridViewColumn Width="60" Header="MinNation"
+                        <GridViewColumn Width="70" Header="저국가"
                         DisplayMemberBinding="{Binding MinMarketNation}"/>
-                        <GridViewColumn Width="60" Header="MinMarket"
+                        <GridViewColumn Width="60" Header="저거래소"
                         DisplayMemberBinding="{Binding MinMarketName}"/>
-                        <GridViewColumn Width="40" Header="Percent"
+                        <GridViewColumn Width="40" Header="%"
                         DisplayMemberBinding="{Binding Percent, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="40" Header="1m"
+                        DisplayMemberBinding="{Binding OneMin, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="40" Header="5m"
+                        DisplayMemberBinding="{Binding FiveMin, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="40" Header="1H"
+                        DisplayMemberBinding="{Binding OneHour, StringFormat={}{0:0.##}}"/>
+                        <GridViewColumn Width="40" Header="1D"
+                        DisplayMemberBinding="{Binding OneDay, StringFormat={}{0:0.##}}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>

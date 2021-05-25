@@ -12,14 +12,14 @@
             <RowDefinition Height="30"></RowDefinition>
         </Grid.RowDefinitions>
         <Button Content="차단 해제" Grid.Row="1" HorizontalAlignment="Right" Margin="5" VerticalAlignment="Top" Width="75"
-                Command=""/>
-        <ListView Grid.Row="0" Margin="5" ItemsSource="{Binding BanList}">
+                Command="{Binding UnblockCommand}"/>
+        <ListView Grid.Row="0" Margin="5" ItemsSource="{Binding BanList}" SelectedItem="{Binding SelectedBan}">
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
                         <GridViewColumn Width="60" Header="종류"
                         DisplayMemberBinding="{Binding Type}"/>
-                        <GridViewColumn Width="60" Header="이름"
+                        <GridViewColumn Width="70" Header="이름"
                         DisplayMemberBinding="{Binding Name}"/>
                     </GridView.Columns>
                 </GridView>

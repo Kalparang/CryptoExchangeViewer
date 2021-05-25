@@ -16,7 +16,7 @@
             <ColumnDefinition MinWidth="110" Width="110"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="100"></RowDefinition>
+            <RowDefinition Height="110"></RowDefinition>
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
 
@@ -33,7 +33,7 @@
             <LineBreak></LineBreak>
             <Run FontSize="14" Text="{Binding SelectedSymbol.TargetPrice, StringFormat=최고가 : {0}}" ></Run>
             <Run FontSize="14" Text="{Binding SelectedSymbol.MaxStandPrice, StringFormat=최소가 : {0}}" ></Run>
-            <Run FontSize="14" Text="{Binding SelectedSymbol.MinStandPrice, StringFormat={} {0}}" ></Run>
+            <LineBreak></LineBreak>
             <Run FontSize="14" Text="{Binding SelectedSymbol.Percent, StringFormat=차익률 : {0:N5}}" ></Run>
         </TextBlock>
 
@@ -41,22 +41,16 @@
             <ListView.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="60" Header="Target"
+                        <GridViewColumn Width="50" Header="구매"
                         DisplayMemberBinding="{Binding TargetCrypto}"/>
-                        <GridViewColumn Width="60" Header="MaxStand"
+                        <GridViewColumn Width="50" Header="지불"
                         DisplayMemberBinding="{Binding MaxStandCurrency}"/>
-                        <GridViewColumn Width="60" Header="MinStand"
-                        DisplayMemberBinding="{Binding MinStandCurrency}"/>
-                        <GridViewColumn Width="60" Header="MaxNation"
+                        <GridViewColumn Width="70" Header="국가"
                         DisplayMemberBinding="{Binding MaxMarketNation}"/>
-                        <GridViewColumn Width="60" Header="MaxMarket"
+                        <GridViewColumn Width="60" Header="거래소"
                         DisplayMemberBinding="{Binding MaxMarketName}"/>
-                        <GridViewColumn Width="60" Header="MinNation"
-                        DisplayMemberBinding="{Binding MinMarketNation}"/>
-                        <GridViewColumn Width="60" Header="MinMarket"
-                        DisplayMemberBinding="{Binding MinMarketName}"/>
-                        <GridViewColumn Width="60" Header="Percent"
-                        DisplayMemberBinding="{Binding Percent}"/>
+                        <GridViewColumn Width="100" Header="KRW"
+                        DisplayMemberBinding="{Binding TargetPrice}"/>
                     </GridView.Columns>
                 </GridView>
             </ListView.View>

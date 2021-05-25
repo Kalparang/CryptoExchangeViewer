@@ -12,7 +12,7 @@ namespace DBHelper
     public class DBHelper
     {
         SQLiteConnection conn;
-        SQLiteAsync sqAsync;
+
         private Dictionary<string, CryptoExchangeModel> coinList;
         public class MarketInputModel
         {
@@ -26,6 +26,18 @@ namespace DBHelper
 
             public string Market;
             public string Nation;
+        }
+
+        public class BlackListModel
+        {
+            public BlackListModel(int Type, string Name)
+            {
+                this.Type = Type;
+                this.Name = Name;
+            }
+
+            public int Type;
+            public string Name;
         }
 
         public class CryptoInputModel
@@ -48,7 +60,18 @@ namespace DBHelper
 
         public class CurrencyExchangeModel
         {
-            public CurrencyExchangeModel(string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice, double percent)
+            public CurrencyExchangeModel(string target, string Stand, string nation, string market, decimal Price)
+            {
+                this.targetCrypto = target;
+                this.maxStandCurrency = Stand;
+                this.maxMarketNation = nation;
+                this.maxMarketName = market;
+                this.TargetPrice = Price;
+            }
+
+            public CurrencyExchangeModel(
+                string target, string maxStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice,
+                double percent, double oneMin, double fiveMin, double oneHour, double oneDay)
             {
                 this.targetCrypto = target;
                 this.maxStandCurrency = maxStand;
@@ -60,9 +83,14 @@ namespace DBHelper
                 this.TargetPrice = TargetPrice;
                 this.StandPrice = StandPrice;
                 this.percent = percent;
+                this.OneMin = oneMin;
+                this.FiveMin = fiveMin;
+                this.OneHour = oneHour;
+                this.OneDay = oneDay;
             }
 
-            public CurrencyExchangeModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice, double percent)
+            public CurrencyExchangeModel(string target, string maxStand, string minStand, string maxnation, string maxmarket, string minnation, string minmarket, decimal TargetPrice, decimal StandPrice,
+                double percent, double oneMin, double fiveMin, double oneHour, double oneDay)
             {
                 this.targetCrypto = target;
                 this.maxStandCurrency = maxStand;
@@ -74,6 +102,10 @@ namespace DBHelper
                 this.TargetPrice = TargetPrice;
                 this.StandPrice = StandPrice;
                 this.percent = percent;
+                this.OneMin = oneMin;
+                this.FiveMin = fiveMin;
+                this.OneHour = oneHour;
+                this.OneDay = oneDay;
             }
 
             public string targetCrypto;
@@ -86,6 +118,10 @@ namespace DBHelper
             public decimal TargetPrice;
             public decimal StandPrice;
             public double percent;
+            public double OneMin;
+            public double FiveMin;
+            public double OneHour;
+            public double OneDay;
         }
 
         public class CryptoExchangeModel
@@ -128,11 +164,7 @@ namespace DBHelper
 
         public DBHelper()
         {
-            sqAsync = new SQLiteAsync();
             coinList = new Dictionary<string, CryptoExchangeModel>();
-
-            //var list = select();
-
 
             string DBLocation = Environment.CurrentDirectory + @"\CryptoExchange.sqlite";
 
@@ -206,11 +238,69 @@ namespace DBHelper
             SELECT Date, Target_Coin, Stand_Coin, MAX(Price) AS Price, Nation, MarketName
             FROM LastDatas GROUP BY Target_Coin, Stand_Coin;
 
+            CREATE VIEW IF NOT EXISTS OneMinDatas2 AS
+            SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
+            FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
+            FROM MarketDetail WHERE Date <= datetime('now', 'localtime', '-542 minute')
+            GROUP BY Target_Coin, Stand_Coin, MarketName) A
+            INNER JOIN MarketList B on A.MarketName=B.MarketName;
+
+            CREATE VIEW IF NOT EXISTS OneMinDatas AS SELECT * FROM OneMinDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
+
+            CREATE VIEW IF NOT EXISTS FiveMinDatas2 AS
+            SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
+            FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
+            FROM MarketDetail WHERE Date<=datetime('now', 'localtime', '-547 minute')
+            GROUP BY Target_Coin, Stand_Coin, MarketName) A
+            INNER JOIN MarketList B on A.MarketName=B.MarketName;
+
+            CREATE VIEW IF NOT EXISTS FiveMinDatas AS SELECT * FROM FiveMinDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
+
+            CREATE VIEW IF NOT EXISTS OneHourDatas2 AS
+            SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
+            FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
+            FROM MarketDetail WHERE Date <= datetime('now', 'localtime', '-10 hour')
+            GROUP BY Target_Coin, Stand_Coin, MarketName) A INNER JOIN MarketList B on A.MarketName=B.MarketName;
+
+            CREATE VIEW IF NOT EXISTS OneHourDatas AS SELECT * FROM OneHourDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
+
+            CREATE VIEW IF NOT EXISTS OneDayDatas2 AS
+            SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
+            FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
+            FROM MarketDetail WHERE Date <= datetime('now', 'localtime', '-1 day')
+            GROUP BY Target_Coin, Stand_Coin, MarketName) A
+            INNER JOIN MarketList B on A.MarketName=B.MarketName;
+
+            CREATE VIEW IF NOT EXISTS OneDayDatas AS SELECT * FROM OneDayDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
+
             CREATE VIEW IF NOT EXISTS CryptoExchange AS
             SELECT A.Date AS Date, A.Target_Coin, A.Stand_Coin, A.Nation AS MaxNation, A.MarketName AS MaxMarketName,
             B.Nation AS MinNation, B.MarketName AS MinMarketName, A.Price AS MaxPrice, B.Price AS MinPrice, 100 - (B.Price / A.Price * 100) AS Percent
             FROM MaxPrices A INNER JOIN MinPrices B
             ON A.Target_Coin = B.Target_Coin AND A.Stand_Coin = B.Stand_Coin AND A.MarketName != B.MarketName;
+
+            CREATE VIEW IF NOT EXISTS CryptoExchangeWithTrends as select A.Date as date, A.Target_Coin, A.Stand_Coin, A.MaxNation, A.MaxMarketName, A.MinNation, A.MinMarketName, A.MaxPrice, A.MinPrice, A.Percent,
+            CASE WHEN B1.Price > 0 and B2.Price > 0 and (100 - B2.Price / B1.Price * 100) > A.Percent then (100 - B2.Price / B1.Price * 100) - A.Percent
+            WHEN B1.Price > 0 and B2.Price > 0 and (100 - B2.Price / B1.Price * 100) <= A.Percent then A.Percent - (100 - B2.Price / B1.Price * 100)
+            else null end AS OneMin,
+            case when C1.price > 0 and C2.price > 0 AND (100 - C2.Price / C1.Price * 100) > A.Percent then (100 - C2.Price / C1.Price * 100) - A.Percent
+            WHEN C1.Price > 0 and C2.Price > 0 and (100 - C2.Price / C1.Price * 100) <= A.Percent then A.Percent - (100 - C2.Price / C1.Price * 100)
+            else null end AS FiveMin,
+            case when D1.price > 0 and D2.price > 0 AND (100 - D2.Price / D1.Price * 100) > A.Percent then (100 - D2.Price / D1.Price * 100) - A.Percent
+            WHEN D1.Price > 0 and D2.Price > 0 and (100 - D2.Price / D1.Price * 100) <= A.Percent then A.Percent - (100 - D2.Price / D1.Price * 100)
+            else null end AS OneHour,
+            case when E1.price > 0 and E2.price > 0 AND (100 - E2.Price / E1.Price * 100) > A.Percent then (100 - E2.Price / E1.Price * 100) - A.Percent
+            WHEN E1.Price > 0 and E2.Price > 0 and (100 - E2.Price / E1.Price * 100) <= A.Percent then A.Percent - (100 - E2.Price / E1.Price * 100)
+            else null end AS OneDay
+            FROM cryptoexchange A
+            left join OneMinDatas B1 on A.target_coin=B1.target_coin and A.stand_coin=B1.stand_coin and A.MaxMarketName=B1.MarketName
+            left join OneMinDatas B2 on A.target_coin=B2.target_coin and A.stand_coin=B2.stand_coin and A.MinMarketName=B2.MarketName
+            left join FiveMinDatas C1 on A.target_coin=C1.target_coin and A.stand_coin=C1.stand_coin and A.MaxMarketName=C1.MarketName
+            left join FiveMinDatas C2 on A.target_coin=C2.target_coin and A.stand_coin=C2.stand_coin and A.MinMarketName=C2.MarketName
+            left join OneHourDatas D1 on A.target_coin=D1.target_coin and A.stand_coin=D1.stand_coin and A.MaxMarketName=D1.MarketName
+            left join OneHourDatas D2 on A.target_coin=D2.target_coin and A.stand_coin=D2.stand_coin and A.MinMarketName=D2.MarketName
+            left join OneDayDatas E1 on A.target_coin=E1.target_coin and A.stand_coin=E1.stand_coin and A.MaxMarketName=E1.MarketName
+            left join OneDayDatas E2 on A.target_coin=E2.target_coin and A.stand_coin=E2.stand_coin and A.MinMarketName=E2.MarketName;
 
             CREATE VIEW IF NOT EXISTS LastExchangeInfo AS
             SELECT MAX(date), Target_Currency, Stand_Currency, Price
@@ -234,14 +324,67 @@ namespace DBHelper
              SELECT Date, Target_Coin, Stand_Coin, Price, Nation, MarketName, MAX(KRW) AS KRW
             FROM KRWList GROUP BY Target_Coin;
 
+            CREATE VIEW IF NOT EXISTS OneMinKRWDatas AS
+            SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
+            A.Price * B.Price as krw from OneMinDatas A
+            INNER JOIN (SELECT * FROM ExchangeInfo WHERE stand_currency==""KRW"") B
+            on B.Date<=datetime('now', 'localtime', '-542 minute') AND A.stand_coin=B.target_Currency
+            GROUP BY A.target_coin, A.stand_Coin, A.marketname;
+
+            CREATE VIEW IF NOT EXISTS FiveMinKRWDatas AS
+            SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
+            A.Price * B.Price as KRW FROM FiveMinDatas A
+            INNER JOIN (SELECT * FROM exchangeinfo where stand_currency==""KRW"") B
+            ON B.Date<=datetime('now', 'localtime', '-547 minute') AND A.stand_coin=B.target_Currency
+            GROUP BY A.target_coin, A.stand_Coin, A.marketname;
+
+            CREATE VIEW IF NOT EXISTS OneHourKRWDatas AS
+            select A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
+            A.Price * B.Price as krw from onehourdatas A
+            INNER JOIN (SELECT * from exchangeinfo where stand_currency==""KRW"") B
+            ON B.Date<=datetime('now', 'localtime', '-1 hour') AND A.stand_coin=B.target_Currency
+            GROUP BY A.target_coin, A.stand_Coin, A.marketname;
+
+            CREATE VIEW IF NOT EXISTS OneDayKRWDatas AS
+            SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
+            A.Price * B.Price as krw FROM OneDayDatas A
+            INNER JOIN (SELECT * from exchangeinfo where stand_currency==""KRW"") B
+            ON B.Date<=datetime('now', 'localtime', '-1 day') AND A.stand_coin=B.target_Currency
+            GROUP BY A.target_coin, A.stand_Coin, A.marketname;
+
             CREATE VIEW IF NOT EXISTS CurrencyExchange AS
             SELECT Min.Date, Min.Target_Coin, Max.Stand_Coin AS MaxStand_Coin, Min.Stand_Coin AS MinStand_Coin,
             Max.Nation AS MaxNation, Max.MarketName AS MaxMarketName, Min.Nation AS MinNation, Min.MarketName AS MinMarketName,
-            Max.Price AS MaxPrice, Min.Price AS MinPrice, 100 - (Min.KRW / Max.KRW * 100) AS Percent
+            Max.KRW AS MaxPrice, Min.KRW AS MinPrice, 100 - (Min.KRW / Max.KRW * 100) AS Percent
             FROM MinKRWList Min INNER JOIN MaxKRWList Max
             ON Min.Target_Coin=MAX.Target_Coin AND Min.MarketName!=Max.MarketName;
 
-            INSERT OR REPLACE INTO ExchangeInfo VALUES (""2021-05-20 오전 00:00:00"", ""KRW"", ""KRW"", 1);
+            CREATE VIEW IF NOT EXISTS CurrencyExchangeWithTrends AS
+            SELECT A.Date as date, A.Target_Coin, A.MaxStand_Coin, A.MinStand_Coin, A.MaxNation, A.MaxMarketName,
+            A.MinNation, A.MinMarketName, A.MaxPrice, A.MinPrice, A.Percent,
+            case when B1.krw > 0 and B2.krw > 0 AND (100 - B2.krw / B1.krw * 100) > A.Percent then CAST((100 - B2.krw / B1.krw * 100) AS DOUBLE) - A.Percent
+            WHEN B1.krw > 0 and B2.krw > 0 AND (100 - B2.krw / B1.krw * 100) <= A.Percent then A.Percent - CAST((100 - B2.krw / B1.krw * 100) AS DOUBLE)
+            else null end AS OneMin,
+            case when C1.krw > 0 and C2.krw > 0 AND (100 - C2.krw / C1.krw * 100) > A.Percent then CAST((100 - C2.krw / C1.krw * 100) AS DOUBLE) - A.Percent
+            WHEN C1.krw > 0 and C2.krw > 0 AND (100 - C2.krw / C1.krw * 100) <= A.Percent then A.Percent - CAST((100 - C2.krw / C1.krw * 100) AS DOUBLE)
+            else null end AS FiveMin,
+            case when D1.krw > 0 and D2.krw > 0 AND (100 - D2.krw / D1.krw * 100) > A.Percent then CAST((100 - D2.krw / D1.krw * 100) AS DOUBLE) - A.Percent
+            WHEN D1.krw > 0 and D2.krw > 0 AND (100 - D2.krw / D1.krw * 100) <= A.Percent then A.Percent - CAST((100 - D2.krw / D1.krw * 100) AS DOUBLE)
+            else null end AS OneHour,
+            case when E1.krw > 0 and E2.krw > 0 AND (100 - E2.krw / E1.krw * 100) > A.Percent then CAST((100 - E2.krw / E1.krw * 100) AS DOUBLE) - A.Percent
+            WHEN E1.krw > 0 and E2.krw > 0 AND (100 - E2.krw / E1.krw * 100) <= A.Percent then A.Percent - CAST((100 - E2.krw / E1.krw * 100) AS DOUBLE)
+            else null end AS OneDay
+            FROM currencyexchange A
+            left join OneMinkrwDatas B1 on A.target_coin=B1.target_coin and A.MaxStand_Coin=B1.stand_coin and A.MaxMarketName=B1.MarketName
+            left join OneMinkrwDatas B2 on A.target_coin=B2.target_coin and A.MinStand_Coin=B2.stand_coin and A.MinMarketName=B2.MarketName
+            left join FiveMinkrwDatas C1 on A.target_coin=C1.target_coin and A.MaxStand_Coin=C1.stand_coin and A.MaxMarketName=C1.MarketName
+            left join FiveMinkrwDatas C2 on A.target_coin=C2.target_coin and A.MinStand_Coin=C2.stand_coin and A.MinMarketName=C2.MarketName
+            left join OneHourkrwDatas D1 on A.target_coin=D1.target_coin and A.MaxStand_Coin=D1.stand_coin and A.MaxMarketName=D1.MarketName
+            left join OneHourkrwDatas D2 on A.target_coin=D2.target_coin and A.MinStand_Coin=D2.stand_coin and A.MinMarketName=D2.MarketName
+            left join OneDaykrwDatas E1 on A.target_coin=E1.target_coin and A.MaxStand_Coin=E1.stand_coin and A.MaxMarketName=E1.MarketName
+            left join OneDaykrwDatas E2 on A.target_coin=E2.target_coin and A.MinStand_Coin=E2.stand_coin and A.MinMarketName=E2.MarketName;
+
+            INSERT OR REPLACE INTO ExchangeInfo VALUES (""2021-05-20 00:00:00"", ""KRW"", ""KRW"", 1);
             ";
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
@@ -258,7 +401,7 @@ namespace DBHelper
 
         private void Conn_Disposed(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+
         }
 
         public void InputMarketData(MarketInputModel model)
@@ -291,10 +434,12 @@ namespace DBHelper
             if (conn.State != System.Data.ConnectionState.Open)
                 return;
 
+            string date = model.Date.ToString("yyyy/MM/dd HH:mm:ss");
+
             string sql = @"
             INSERT INTO MarketDetail "
             + "VALUES ("
-            + "\"" +  model.Date + "\"" + ", "
+            + "\"" + date + "\"" + ", "
             + "\"" + model.Target + "\"" + ", "
             + "\"" + model.Stand + "\"" + ", "
             + model.Price + ", "
@@ -310,10 +455,12 @@ namespace DBHelper
             if (conn.State != System.Data.ConnectionState.Open)
                 return;
 
+            string date = model.Date.ToString("yyyy/MM/dd HH:mm:ss");
+
             string sql = @"
             INSERT INTO ExchangeInfo "
             + "VALUES ("
-            + "\"" + model.Date + "\"" + ", "
+            + "\"" + date + "\"" + ", "
             + "\"" + model.Target + "\"" + ", "
             + "\"" + model.Stand + "\"" + ", "
             + model.Price + ");";
@@ -366,19 +513,6 @@ namespace DBHelper
             return result;
         }
 
-        class SQLiteAsync
-        {
-            public virtual Task<int> ExecuteNonQueryAsync(SQLiteCommand cmd)
-            {
-                return Task.FromResult<int>(cmd.ExecuteNonQuery());
-            }
-
-            public virtual Task<SQLiteDataReader> ExecuteReaderAsync(SQLiteCommand cmd)
-            {
-                return Task.FromResult<SQLiteDataReader>(cmd.ExecuteReader());
-            }
-        }
-
         public IEnumerable<CurrencyExchangeModel> select()
         {
             List<CurrencyExchangeModel> model = new List<CurrencyExchangeModel>();
@@ -386,7 +520,7 @@ namespace DBHelper
             if (conn.State != System.Data.ConnectionState.Open)
                 return model;
 
-            string sql = @"SELECT * FROM CryptoExchange ORDER BY Percent DESC;";
+            string sql = @"SELECT * FROM CryptoExchangeWithTrends ORDER BY Percent DESC;";
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
             SQLiteDataReader rdr = TryExecuteReader(command);
@@ -401,14 +535,32 @@ namespace DBHelper
                     string MaxMarketName = (string)rdr["MaxMarketName"];
                     string MinNation = ((string)rdr["MinNation"]);
                     string MinMarketName = (string)rdr["MinMarketName"];
-                    decimal MaxPrice = (decimal)(double)rdr["MaxPrice"];    //DB에 Decimal로 지정했는데 반환은 Double로 옴. 머선????
-                    decimal MinPrice = (decimal)(double)rdr["MinPrice"];
-                    double Percent = (double)rdr["Percent"];
+                    decimal MaxPrice = Convert.ToDecimal(rdr["MaxPrice"]);
+                    decimal MinPrice = Convert.ToDecimal(rdr["MinPrice"]);
+                    double Percent = Convert.ToDouble(rdr["Percent"]);
+                    double OneMin = -111;
+                    if (rdr["OneMin"].ToString() != "")
+                        OneMin = Convert.ToDouble(rdr["OneMin"]);
+                    double FiveMin = -111;
+                    if (rdr["FiveMin"].ToString() != "")
+                        FiveMin = Convert.ToDouble(rdr["FiveMin"]);
+                    double OneHour = -111;
+                    if (rdr["OneHour"].ToString() != "")
+                        OneHour = Convert.ToDouble(rdr["OneHour"]);
+                    double OneDay = -111;
+                    if (rdr["OneDay"].ToString() != "")
+                    {
+                        OneDay = Convert.ToDouble(rdr["OneDay"]);
+                    }
                     //string Date = (string)rdr["Date"];
 
-                    model.Add(new CurrencyExchangeModel(Target, Stand, MaxNation, MaxMarketName, MinNation, MinMarketName, MaxPrice, MinPrice, Percent));
+                    model.Add(new CurrencyExchangeModel(Target, Stand, MaxNation, MaxMarketName, MinNation, MinMarketName, MaxPrice, MinPrice,
+                        Percent, OneMin, FiveMin, OneHour, OneDay));
                 }
-                catch (InvalidCastException e) { }
+                catch (InvalidCastException e)
+                {
+                    var ve = e;
+                }
             }
 
             return model;
@@ -421,7 +573,7 @@ namespace DBHelper
             if (conn.State != System.Data.ConnectionState.Open)
                 return model;
 
-            string sql = @"SELECT * FROM CurrencyExchange ORDER BY Percent DESC;";
+            string sql = @"SELECT * FROM CurrencyExchangeWithTrends ORDER BY Percent DESC;";
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
             SQLiteDataReader rdr = TryExecuteReader(command);
@@ -437,51 +589,122 @@ namespace DBHelper
                     string MaxMarket = (string)rdr["MaxMarketName"];
                     string MinNation = (string)rdr["MinNation"];
                     string MinMarket = (string)rdr["MinMarketName"];
-                    decimal MaxPrice = (decimal)rdr["MaxPrice"];    //안니;;; 얘는 Decimal로 반환됨;;
-                    decimal MinPrice = (decimal)rdr["MinPrice"];
-                    double Percent = (double)rdr["Percent"];
+                    decimal MaxPrice = Convert.ToDecimal(rdr["MaxPrice"]);
+                    decimal MinPrice = Convert.ToDecimal(rdr["MinPrice"]);
+                    double Percent = Convert.ToDouble(rdr["Percent"]);
+                    double OneMin = -111;
+                    if (rdr["OneMin"].ToString() != "")
+                        OneMin = Convert.ToDouble(rdr["OneMin"]);
+                    double FiveMin = -111;
+                    if (rdr["FiveMin"].ToString() != "")
+                        FiveMin = Convert.ToDouble(rdr["FiveMin"]);
+                    double OneHour = -111;
+                    if (rdr["OneHour"].ToString() != "")
+                        OneHour = Convert.ToDouble(rdr["OneHour"]);
+                    double OneDay = -111;
+                    if (rdr["OneDay"].ToString() != "")
+                        OneDay = Convert.ToDouble(rdr["OneDay"]);
 
-                    model.Add(new CurrencyExchangeModel(Target, MaxStand, MinStand, MaxNation, MaxMarket, MinNation, MinMarket, MaxPrice, MinPrice, Percent));
+                    model.Add(new CurrencyExchangeModel(Target, MaxStand, MinStand, MaxNation, MaxMarket, MinNation, MinMarket, MaxPrice, MinPrice,
+                        Percent, OneMin, FiveMin, OneHour, OneDay));
                 }
-                catch (Exception e) { }
+                catch (Exception e)
+                {
+                    var ve = e;
+                }
             }
             return model;
         }
 
-        public async Task<IEnumerable<CryptoExchangeModel>> SelectTest2()
+        public List<ExchangeInputModel> SelectExchange()
         {
-            List<CryptoExchangeModel> model = new List<CryptoExchangeModel>();
+            List<ExchangeInputModel> model = new List<ExchangeInputModel>();
 
             if (conn.State != System.Data.ConnectionState.Open)
                 return model;
 
-            string sql = @"SELECT * FROM CryptoExchange WHERE Percent < 30 ORDER BY Percent DESC LIMIT 20;";
+            string sql = @"SELECT MAX(Date), Target_Currency, Stand_Currency, Price 
+            FROM ExchangeInfo WHERE NOT Target_Currency=Stand_Currency GROUP BY Target_Currency, Stand_Currency;";
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
-            SQLiteDataReader rdr = await sqAsync.ExecuteReaderAsync(command);
+            SQLiteDataReader rdr = TryExecuteReader(command);
 
             while (rdr.Read())
             {
-                string[] Coins = ((string)rdr["Coins"]).Split('-');
-                string Target = Coins[0];
-                string Stand = Coins[1];
-                string MaxMarketName = (string)rdr["MaxMarketName"];
-                string MinMarketName = (string)rdr["MinMarketName"];
-                decimal MaxPrice = (decimal)rdr["MaxPrice"];
-                decimal MinPrice = (decimal)rdr["MinPrice"];
-                double Percent = (double)rdr["Percent"];
-                //string Date = (string)rdr["Date"];
+                try
+                {
+                    string Target = (string)rdr["Target_Currency"];
+                    string Stand = (string)rdr["Stand_Currency"];
+                    decimal Price = (decimal)rdr["Price"];
 
-                model.Add(new CryptoExchangeModel(DateTime.Now, Target, Stand, MaxMarketName, MinMarketName, Percent));
+                    model.Add(new ExchangeInputModel(DateTime.Now, Target, Stand, Price));
+                }
+                catch (Exception e) { }
             }
 
             return model;
         }
 
-        private void Conn_Update(object sender, UpdateEventArgs e)
+        public List<CurrencyExchangeModel> SelectedList(string TargetCoin, string StandCoin)
         {
-            throw new NotImplementedException();
+            List<CurrencyExchangeModel> model = new List<CurrencyExchangeModel>();
+
+            if (conn.State != System.Data.ConnectionState.Open)
+                return model;
+
+            string sql = $"SELECT * FROM LastDatas WHERE Target_Coin=\"{TargetCoin}\" AND Stand_Coin=\"{StandCoin}\" ORDER BY Price DESC;";
+
+            SQLiteCommand command = new SQLiteCommand(sql, conn);
+            SQLiteDataReader rdr = TryExecuteReader(command);
+
+            while (rdr.Read())
+            {
+                try
+                {
+                    string Target = ((string)rdr["Target_Coin"]);
+                    string Stand = ((string)rdr["Stand_Coin"]);
+                    string Nation = ((string)rdr["Nation"]);
+                    string MarketName = (string)rdr["MarketName"];
+                    decimal Price = (decimal)rdr["Price"];
+
+                    model.Add(new CurrencyExchangeModel(Target, Stand, Nation, MarketName, Price));
+                }
+                catch (SQLiteException sqe) { }
+            }
+
+            return model;
         }
+
+        public List<CurrencyExchangeModel> SelectedList(string TargetCoin)
+        {
+            List<CurrencyExchangeModel> model = new List<CurrencyExchangeModel>();
+
+            if (conn.State != System.Data.ConnectionState.Open)
+                return model;
+
+            string sql = $"SELECT * FROM KRWList WHERE Target_Coin=\"{TargetCoin}\" ORDER BY KRW DESC;";
+
+            SQLiteCommand command = new SQLiteCommand(sql, conn);
+            SQLiteDataReader rdr = TryExecuteReader(command);
+
+            while (rdr.Read())
+            {
+                try
+                {
+                    string Target = (string)rdr["Target_Coin"];
+                    string Stand = (string)rdr["Stand_Coin"];
+                    string Nation = (string)rdr["Nation"];
+                    string MarketName = (string)rdr["MarketName"];
+                    decimal Price = Convert.ToDecimal(rdr["KRW"]);
+                    
+                    model.Add(new CurrencyExchangeModel(Target, Stand, Nation, MarketName, Price));
+                }
+                catch (SQLiteException sqe) { }
+            }
+
+            return model;
+        }
+
 
         public void AddBan(int Type, string BanName)
         {
@@ -493,7 +716,7 @@ namespace DBHelper
             SQLiteCommand command = new SQLiteCommand(sql, conn);
 
             try
-            { int result = command.ExecuteNonQuery(); }
+            { int result = TryExecuteNonQuery(command); }
             catch(SQLiteException sqe)
             { if(sqe.ErrorCode != 19) throw sqe; }
         }
@@ -503,14 +726,49 @@ namespace DBHelper
             if (conn.State != System.Data.ConnectionState.Open)
                 return;
 
-            string sql = $"DELETE FROM BlackList WHERE Name={Name} AND Type={Type};";
+            string sql = $"DELETE FROM BlackList WHERE Name=\"{Name}\" AND Type={Type};";
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
 
             try
-            { int result = command.ExecuteNonQuery(); }
+            { int result = TryExecuteNonQuery(command); }
             catch (SQLiteException sqe)
-            { }
+            { var sq = sqe.ErrorCode; }
+        }
+
+        public List<BlackListModel> SelectBlackList()
+        {
+            List<BlackListModel> model = new List<BlackListModel>();
+
+            if (conn.State != System.Data.ConnectionState.Open)
+                return model;
+
+            string sql = @"SELECT * FROM BlackList;";
+
+            SQLiteCommand command = new SQLiteCommand(sql, conn);
+            SQLiteDataReader rdr = TryExecuteReader(command);
+
+            while (rdr.Read())
+            {
+                try
+                {
+                    int Type = (int)rdr["Type"];
+                    string Name = (string)rdr["Name"];
+
+                    model.Add(new BlackListModel(Type, Name));
+                }
+                catch (SQLiteException sqe)
+                { }
+            }
+
+            return model;
+        }
+
+        private void ClearOldData()
+        {
+            if (conn.State != System.Data.ConnectionState.Open)
+                return;
+
 
         }
     }
