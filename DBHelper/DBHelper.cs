@@ -215,83 +215,91 @@ namespace DBHelper
               `Type` INT NOT NULL,
               PRIMARY KEY (`Name`));
 
-            CREATE VIEW IF NOT EXISTS BanMarketList AS
+            DROP VIEW IF EXISTS BanMarketList;
+            CREATE VIEW BanMarketList AS
             SELECT Name FROM BlackList WHERE Type=1;
 
-            CREATE VIEW IF NOT EXISTS BanNationList AS
+            DROP VIEW IF EXISTS BanNationList;
+            CREATE VIEW BanNationList AS
             SELECT Name FROM BlackList WHERE Type=2;
 
-            CREATE VIEW IF NOT EXISTS LastDatas2 AS
+            DROP VIEW IF EXISTS LastDatas2;
+            CREATE VIEW LastDatas2 AS
             SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName FROM
             (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
             FROM MarketDetail GROUP BY Target_Coin, Stand_Coin, MarketName) A
             INNER JOIN MarketList B on A.MarketName=B.MarketName;
 
-            CREATE VIEW IF NOT EXISTS LastDatas AS
+            DROP VIEW IF EXISTS LastDatas;
+            CREATE VIEW LastDatas AS
             SELECT * FROM LastDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
             
-            CREATE VIEW IF NOT EXISTS MinPrices AS
+            DROP VIEW IF EXISTS MinPrices;
+            CREATE VIEW MinPrices AS
             SELECT Date, Target_Coin, Stand_Coin, MIN(Price) AS Price, Nation, MarketName
             FROM LastDatas GROUP BY Target_Coin, Stand_Coin;
 
-            CREATE VIEW IF NOT EXISTS MaxPrices AS
+            DROP VIEW IF EXISTS MaxPrices;
+            CREATE VIEW MaxPrices AS
             SELECT Date, Target_Coin, Stand_Coin, MAX(Price) AS Price, Nation, MarketName
             FROM LastDatas GROUP BY Target_Coin, Stand_Coin;
 
-            CREATE VIEW IF NOT EXISTS OneMinDatas2 AS
+            DROP VIEW IF EXISTS OneMinDatas2;
+            CREATE VIEW OneMinDatas2 AS
             SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
             FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
             FROM MarketDetail WHERE Date <= datetime('now', 'localtime', '-542 minute')
             GROUP BY Target_Coin, Stand_Coin, MarketName) A
             INNER JOIN MarketList B on A.MarketName=B.MarketName;
 
-            CREATE VIEW IF NOT EXISTS OneMinDatas AS SELECT * FROM OneMinDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
+            DROP VIEW IF EXISTS OneMinDatas;
+            CREATE VIEW OneMinDatas AS SELECT * FROM OneMinDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
 
-            CREATE VIEW IF NOT EXISTS FiveMinDatas2 AS
+            DROP VIEW IF EXISTS FiveMinDatas2;
+            CREATE VIEW FiveMinDatas2 AS
             SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
             FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
             FROM MarketDetail WHERE Date<=datetime('now', 'localtime', '-547 minute')
             GROUP BY Target_Coin, Stand_Coin, MarketName) A
             INNER JOIN MarketList B on A.MarketName=B.MarketName;
 
-            CREATE VIEW IF NOT EXISTS FiveMinDatas AS SELECT * FROM FiveMinDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
+            DROP VIEW IF EXISTS FiveMinDatas;
+            CREATE VIEW FiveMinDatas AS SELECT * FROM FiveMinDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
 
-            CREATE VIEW IF NOT EXISTS OneHourDatas2 AS
+            DROP VIEW IF EXISTS OneHourDatas2;
+            CREATE VIEW OneHourDatas2 AS
             SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
             FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
             FROM MarketDetail WHERE Date <= datetime('now', 'localtime', '-10 hour')
             GROUP BY Target_Coin, Stand_Coin, MarketName) A INNER JOIN MarketList B on A.MarketName=B.MarketName;
 
-            CREATE VIEW IF NOT EXISTS OneHourDatas AS SELECT * FROM OneHourDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
+            DROP VIEW IF EXISTS OneHourDatas;
+            CREATE VIEW OneHourDatas AS SELECT * FROM OneHourDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
 
-            CREATE VIEW IF NOT EXISTS OneDayDatas2 AS
+            DROP VIEW IF EXISTS OneDayDatas2;
+            CREATE VIEW OneDayDatas2 AS
             SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
             FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
-            FROM MarketDetail WHERE Date <= datetime('now', 'localtime', '-1 day')
+            FROM MarketDetail WHERE Date <= datetime('now', 'localtime', '-33 hour')
             GROUP BY Target_Coin, Stand_Coin, MarketName) A
             INNER JOIN MarketList B on A.MarketName=B.MarketName;
 
-            CREATE VIEW IF NOT EXISTS OneDayDatas AS SELECT * FROM OneDayDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
+            DROP VIEW IF EXISTS OneDayDatas;
+            CREATE VIEW OneDayDatas AS SELECT * FROM OneDayDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
 
-            CREATE VIEW IF NOT EXISTS CryptoExchange AS
+            DROP VIEW IF EXISTS CryptoExchange;
+            CREATE VIEW CryptoExchange AS
             SELECT A.Date AS Date, A.Target_Coin, A.Stand_Coin, A.Nation AS MaxNation, A.MarketName AS MaxMarketName,
             B.Nation AS MinNation, B.MarketName AS MinMarketName, A.Price AS MaxPrice, B.Price AS MinPrice, 100 - (B.Price / A.Price * 100) AS Percent
             FROM MaxPrices A INNER JOIN MinPrices B
             ON A.Target_Coin = B.Target_Coin AND A.Stand_Coin = B.Stand_Coin AND A.MarketName != B.MarketName;
 
-            CREATE VIEW IF NOT EXISTS CryptoExchangeWithTrends as select A.Date as date, A.Target_Coin, A.Stand_Coin, A.MaxNation, A.MaxMarketName, A.MinNation, A.MinMarketName, A.MaxPrice, A.MinPrice, A.Percent,
-            CASE WHEN B1.Price > 0 and B2.Price > 0 and (100 - B2.Price / B1.Price * 100) > A.Percent then (100 - B2.Price / B1.Price * 100) - A.Percent
-            WHEN B1.Price > 0 and B2.Price > 0 and (100 - B2.Price / B1.Price * 100) <= A.Percent then A.Percent - (100 - B2.Price / B1.Price * 100)
-            else null end AS OneMin,
-            case when C1.price > 0 and C2.price > 0 AND (100 - C2.Price / C1.Price * 100) > A.Percent then (100 - C2.Price / C1.Price * 100) - A.Percent
-            WHEN C1.Price > 0 and C2.Price > 0 and (100 - C2.Price / C1.Price * 100) <= A.Percent then A.Percent - (100 - C2.Price / C1.Price * 100)
-            else null end AS FiveMin,
-            case when D1.price > 0 and D2.price > 0 AND (100 - D2.Price / D1.Price * 100) > A.Percent then (100 - D2.Price / D1.Price * 100) - A.Percent
-            WHEN D1.Price > 0 and D2.Price > 0 and (100 - D2.Price / D1.Price * 100) <= A.Percent then A.Percent - (100 - D2.Price / D1.Price * 100)
-            else null end AS OneHour,
-            case when E1.price > 0 and E2.price > 0 AND (100 - E2.Price / E1.Price * 100) > A.Percent then (100 - E2.Price / E1.Price * 100) - A.Percent
-            WHEN E1.Price > 0 and E2.Price > 0 and (100 - E2.Price / E1.Price * 100) <= A.Percent then A.Percent - (100 - E2.Price / E1.Price * 100)
-            else null end AS OneDay
+            DROP VIEW IF EXISTS CryptoExchangeWithTrends;
+            CREATE VIEW CryptoExchangeWithTrends as select A.Date as date, A.Target_Coin, A.Stand_Coin, A.MaxNation, A.MaxMarketName, A.MinNation, A.MinMarketName, A.MaxPrice, A.MinPrice, A.Percent,
+            CASE WHEN B1.Price > 0 and B2.Price > 0 then (100 - B2.Price / B1.Price * 100) - A.Percent else null end AS OneMin,
+            case when C1.price > 0 and C2.price > 0 then (100 - C2.Price / C1.Price * 100) - A.Percent else null end AS FiveMin,
+            case when D1.price > 0 and D2.price > 0 then (100 - D2.Price / D1.Price * 100) - A.Percent else null end AS OneHour,
+            case when E1.price > 0 and E2.price > 0 then (100 - E2.Price / E1.Price * 100) - A.Percent else null end AS OneDay
             FROM cryptoexchange A
             left join OneMinDatas B1 on A.target_coin=B1.target_coin and A.stand_coin=B1.stand_coin and A.MaxMarketName=B1.MarketName
             left join OneMinDatas B2 on A.target_coin=B2.target_coin and A.stand_coin=B2.stand_coin and A.MinMarketName=B2.MarketName
@@ -302,78 +310,81 @@ namespace DBHelper
             left join OneDayDatas E1 on A.target_coin=E1.target_coin and A.stand_coin=E1.stand_coin and A.MaxMarketName=E1.MarketName
             left join OneDayDatas E2 on A.target_coin=E2.target_coin and A.stand_coin=E2.stand_coin and A.MinMarketName=E2.MarketName;
 
-            CREATE VIEW IF NOT EXISTS LastExchangeInfo AS
+            DROP VIEW IF EXISTS LastExchangeInfo;
+            CREATE VIEW LastExchangeInfo AS
             SELECT MAX(date), Target_Currency, Stand_Currency, Price
             FROM ExchangeInfo WHERE Stand_Currency == ""KRW""
             GROUP BY Target_Currency, Stand_Currency;
 
-            CREATE VIEW IF NOT EXISTS CurrencyList AS
+            DROP VIEW IF EXISTS CurrencyList;
+            CREATE VIEW CurrencyList AS
             SELECT * FROM LastDatas WHERE Stand_Coin IN (
             SELECT DISTINCT(Target_Currency) FROM ExchangeInfo)
             GROUP BY Target_Coin, Stand_Coin, MarketName;
 
-            CREATE VIEW IF NOT EXISTS KRWList AS
+            DROP VIEW IF EXISTS KRWList;
+            CREATE VIEW KRWList AS
             SELECT a.Date, a.Target_Coin, a.Stand_Coin, a.Price, a.Nation, a.MarketName, a.Price * b.Price AS KRW
             FROM CurrencyList a INNER JOIN LastExchangeInfo b ON a.stand_coin = b.target_currency;
 
-            CREATE VIEW IF NOT EXISTS MinKRWList AS
+            DROP VIEW IF EXISTS MinKRWList;
+            CREATE VIEW MinKRWList AS
             SELECT Date, Target_Coin, Stand_Coin, Price, Nation, MarketName, MIN(KRW) AS KRW
             FROM KRWList GROUP BY Target_Coin;
 
-            CREATE VIEW IF NOT EXISTS MaxKRWList AS
+            DROP VIEW IF EXISTS MaxKRWList;
+            CREATE VIEW MaxKRWList AS
              SELECT Date, Target_Coin, Stand_Coin, Price, Nation, MarketName, MAX(KRW) AS KRW
             FROM KRWList GROUP BY Target_Coin;
 
-            CREATE VIEW IF NOT EXISTS OneMinKRWDatas AS
+            DROP VIEW IF EXISTS OneMinKRWDatas;
+            CREATE VIEW OneMinKRWDatas AS
             SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
             A.Price * B.Price as krw from OneMinDatas A
             INNER JOIN (SELECT * FROM ExchangeInfo WHERE stand_currency==""KRW"") B
-            on B.Date<=datetime('now', 'localtime', '-542 minute') AND A.stand_coin=B.target_Currency
+            on A.stand_coin=B.target_Currency
             GROUP BY A.target_coin, A.stand_Coin, A.marketname;
 
-            CREATE VIEW IF NOT EXISTS FiveMinKRWDatas AS
+            DROP VIEW IF EXISTS FiveMinKRWDatas;
+            CREATE VIEW FiveMinKRWDatas AS
             SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
             A.Price * B.Price as KRW FROM FiveMinDatas A
             INNER JOIN (SELECT * FROM exchangeinfo where stand_currency==""KRW"") B
-            ON B.Date<=datetime('now', 'localtime', '-547 minute') AND A.stand_coin=B.target_Currency
+            ON A.stand_coin=B.target_Currency
             GROUP BY A.target_coin, A.stand_Coin, A.marketname;
 
-            CREATE VIEW IF NOT EXISTS OneHourKRWDatas AS
+            DROP VIEW IF EXISTS OneHourKRWDatas;
+            CREATE VIEW OneHourKRWDatas AS
             select A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
             A.Price * B.Price as krw from onehourdatas A
             INNER JOIN (SELECT * from exchangeinfo where stand_currency==""KRW"") B
-            ON B.Date<=datetime('now', 'localtime', '-1 hour') AND A.stand_coin=B.target_Currency
+            ON A.stand_coin=B.target_Currency
             GROUP BY A.target_coin, A.stand_Coin, A.marketname;
 
-            CREATE VIEW IF NOT EXISTS OneDayKRWDatas AS
+            DROP VIEW IF EXISTS OneDayKRWDatas;
+            CREATE VIEW OneDayKRWDatas AS
             SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
             A.Price * B.Price as krw FROM OneDayDatas A
             INNER JOIN (SELECT * from exchangeinfo where stand_currency==""KRW"") B
-            ON B.Date<=datetime('now', 'localtime', '-1 day') AND A.stand_coin=B.target_Currency
+            ON A.stand_coin=B.target_Currency
             GROUP BY A.target_coin, A.stand_Coin, A.marketname;
 
-            CREATE VIEW IF NOT EXISTS CurrencyExchange AS
+            DROP VIEW IF EXISTS CurrencyExchange;
+            CREATE VIEW CurrencyExchange AS
             SELECT Min.Date, Min.Target_Coin, Max.Stand_Coin AS MaxStand_Coin, Min.Stand_Coin AS MinStand_Coin,
             Max.Nation AS MaxNation, Max.MarketName AS MaxMarketName, Min.Nation AS MinNation, Min.MarketName AS MinMarketName,
             Max.KRW AS MaxPrice, Min.KRW AS MinPrice, 100 - (Min.KRW / Max.KRW * 100) AS Percent
             FROM MinKRWList Min INNER JOIN MaxKRWList Max
             ON Min.Target_Coin=MAX.Target_Coin AND Min.MarketName!=Max.MarketName;
 
-            CREATE VIEW IF NOT EXISTS CurrencyExchangeWithTrends AS
+            DROP VIEW IF EXISTS CurrencyExchangeWithTrends;
+            CREATE VIEW CurrencyExchangeWithTrends AS
             SELECT A.Date as date, A.Target_Coin, A.MaxStand_Coin, A.MinStand_Coin, A.MaxNation, A.MaxMarketName,
             A.MinNation, A.MinMarketName, A.MaxPrice, A.MinPrice, A.Percent,
-            case when B1.krw > 0 and B2.krw > 0 AND (100 - B2.krw / B1.krw * 100) > A.Percent then CAST((100 - B2.krw / B1.krw * 100) AS DOUBLE) - A.Percent
-            WHEN B1.krw > 0 and B2.krw > 0 AND (100 - B2.krw / B1.krw * 100) <= A.Percent then A.Percent - CAST((100 - B2.krw / B1.krw * 100) AS DOUBLE)
-            else null end AS OneMin,
-            case when C1.krw > 0 and C2.krw > 0 AND (100 - C2.krw / C1.krw * 100) > A.Percent then CAST((100 - C2.krw / C1.krw * 100) AS DOUBLE) - A.Percent
-            WHEN C1.krw > 0 and C2.krw > 0 AND (100 - C2.krw / C1.krw * 100) <= A.Percent then A.Percent - CAST((100 - C2.krw / C1.krw * 100) AS DOUBLE)
-            else null end AS FiveMin,
-            case when D1.krw > 0 and D2.krw > 0 AND (100 - D2.krw / D1.krw * 100) > A.Percent then CAST((100 - D2.krw / D1.krw * 100) AS DOUBLE) - A.Percent
-            WHEN D1.krw > 0 and D2.krw > 0 AND (100 - D2.krw / D1.krw * 100) <= A.Percent then A.Percent - CAST((100 - D2.krw / D1.krw * 100) AS DOUBLE)
-            else null end AS OneHour,
-            case when E1.krw > 0 and E2.krw > 0 AND (100 - E2.krw / E1.krw * 100) > A.Percent then CAST((100 - E2.krw / E1.krw * 100) AS DOUBLE) - A.Percent
-            WHEN E1.krw > 0 and E2.krw > 0 AND (100 - E2.krw / E1.krw * 100) <= A.Percent then A.Percent - CAST((100 - E2.krw / E1.krw * 100) AS DOUBLE)
-            else null end AS OneDay
+            case when B1.krw > 0 and B2.krw > 0 then (100 - B2.krw / B1.krw * 100) - A.Percent else null end AS OneMin,
+            case when C1.krw > 0 and C2.krw > 0 then (100 - C2.krw / C1.krw * 100) - A.Percent else null end AS FiveMin,
+            case when D1.krw > 0 and D2.krw > 0 then (100 - D2.krw / D1.krw * 100) - A.Percent else null end AS OneHour,
+            case when E1.krw > 0 and E2.krw > 0 then (100 - E2.krw / E1.krw * 100) - A.Percent else null end AS OneDay
             FROM currencyexchange A
             left join OneMinkrwDatas B1 on A.target_coin=B1.target_coin and A.MaxStand_Coin=B1.stand_coin and A.MaxMarketName=B1.MarketName
             left join OneMinkrwDatas B2 on A.target_coin=B2.target_coin and A.MinStand_Coin=B2.stand_coin and A.MinMarketName=B2.MarketName
@@ -389,6 +400,8 @@ namespace DBHelper
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
             int result = TryExecuteNonQuery(command);
+
+            new Thread(new ThreadStart(ClearOldData)).Start();
 
             conn.Disposed += Conn_Disposed;
             conn.Update += Conn_Update1;
@@ -769,7 +782,18 @@ namespace DBHelper
             if (conn.State != System.Data.ConnectionState.Open)
                 return;
 
+            while (true)
+            {
+                string sql = @"
+                    DELETE FROM MarketDetail WHERE Date < datetime('now', 'localtime', '-35 hour');
+                    DELETE FROM ExchangeInfo WHERE Date < datetime('now', 'localtime', '-35 hour');
+                ";
 
+                SQLiteCommand command = new SQLiteCommand(sql, conn);
+                int result = TryExecuteNonQuery(command);
+
+                Thread.Sleep(1000 * 60 * 60);
+            }
         }
     }
 }
