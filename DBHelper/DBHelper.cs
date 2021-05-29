@@ -271,7 +271,8 @@ namespace DBHelper
             SELECT A.Date, A.Target_Coin, A.Stand_Coin, A.Price, B.Nation, B.MarketName
             FROM (SELECT ROWID, MAX(date) AS Date, Target_Coin, Stand_Coin, Price, marketlist_maketname AS MarketName
             FROM MarketDetail WHERE Date <= datetime('now', 'localtime', '-10 hour')
-            GROUP BY Target_Coin, Stand_Coin, MarketName) A INNER JOIN MarketList B on A.MarketName=B.MarketName;
+            GROUP BY Target_Coin, Stand_Coin, MarketName) A
+            INNER JOIN MarketList B on A.MarketName=B.MarketName;
 
             DROP VIEW IF EXISTS OneHourDatas;
             CREATE VIEW OneHourDatas AS SELECT * FROM OneHourDatas2 WHERE NOT MarketName IN BanMarketList AND NOT Nation IN BanNationList;
@@ -292,14 +293,15 @@ namespace DBHelper
             SELECT A.Date AS Date, A.Target_Coin, A.Stand_Coin, A.Nation AS MaxNation, A.MarketName AS MaxMarketName,
             B.Nation AS MinNation, B.MarketName AS MinMarketName, A.Price AS MaxPrice, B.Price AS MinPrice, 100 - (B.Price / A.Price * 100) AS Percent
             FROM MaxPrices A INNER JOIN MinPrices B
-            ON A.Target_Coin = B.Target_Coin AND A.Stand_Coin = B.Stand_Coin AND A.MarketName != B.MarketName;
+            ON A.Target_Coin = B.Target_Coin AND A.Stand_Coin = B.Stand_Coin AND A.MarketName != B.MarketName
+            WHERE Percent > 0;
 
             DROP VIEW IF EXISTS CryptoExchangeWithTrends;
             CREATE VIEW CryptoExchangeWithTrends as select A.Date as date, A.Target_Coin, A.Stand_Coin, A.MaxNation, A.MaxMarketName, A.MinNation, A.MinMarketName, A.MaxPrice, A.MinPrice, A.Percent,
-            CASE WHEN B1.Price > 0 and B2.Price > 0 then (100 - B2.Price / B1.Price * 100) - A.Percent else null end AS OneMin,
-            case when C1.price > 0 and C2.price > 0 then (100 - C2.Price / C1.Price * 100) - A.Percent else null end AS FiveMin,
-            case when D1.price > 0 and D2.price > 0 then (100 - D2.Price / D1.Price * 100) - A.Percent else null end AS OneHour,
-            case when E1.price > 0 and E2.price > 0 then (100 - E2.Price / E1.Price * 100) - A.Percent else null end AS OneDay
+            CASE WHEN B1.Price > 0 and B2.Price > 0 then A.Percent - (100 - (B2.Price / B1.Price * 100)) else null end AS OneMin,
+            case when C1.price > 0 and C2.price > 0 then A.Percent - (100 - (C2.Price / C1.Price * 100)) else null end AS FiveMin,
+            case when D1.price > 0 and D2.price > 0 then A.Percent - (100 - (D2.Price / D1.Price * 100)) else null end AS OneHour,
+            case when E1.price > 0 and E2.price > 0 then A.Percent - (100 - (E2.Price / E1.Price * 100)) else null end AS OneDay
             FROM cryptoexchange A
             left join OneMinDatas B1 on A.target_coin=B1.target_coin and A.stand_coin=B1.stand_coin and A.MaxMarketName=B1.MarketName
             left join OneMinDatas B2 on A.target_coin=B2.target_coin and A.stand_coin=B2.stand_coin and A.MinMarketName=B2.MarketName
@@ -313,7 +315,7 @@ namespace DBHelper
             DROP VIEW IF EXISTS LastExchangeInfo;
             CREATE VIEW LastExchangeInfo AS
             SELECT MAX(date), Target_Currency, Stand_Currency, Price
-            FROM ExchangeInfo WHERE Stand_Currency == ""KRW""
+            FROM ExchangeInfo WHERE Stand_Currency == 'KRW'
             GROUP BY Target_Currency, Stand_Currency;
 
             DROP VIEW IF EXISTS CurrencyList;
@@ -341,7 +343,7 @@ namespace DBHelper
             CREATE VIEW OneMinKRWDatas AS
             SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
             A.Price * B.Price as krw from OneMinDatas A
-            INNER JOIN (SELECT * FROM ExchangeInfo WHERE stand_currency==""KRW"") B
+            INNER JOIN (SELECT * FROM ExchangeInfo WHERE stand_currency=='KRW') B
             on A.stand_coin=B.target_Currency
             GROUP BY A.target_coin, A.stand_Coin, A.marketname;
 
@@ -349,7 +351,7 @@ namespace DBHelper
             CREATE VIEW FiveMinKRWDatas AS
             SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
             A.Price * B.Price as KRW FROM FiveMinDatas A
-            INNER JOIN (SELECT * FROM exchangeinfo where stand_currency==""KRW"") B
+            INNER JOIN (SELECT * FROM exchangeinfo where stand_currency=='KRW') B
             ON A.stand_coin=B.target_Currency
             GROUP BY A.target_coin, A.stand_Coin, A.marketname;
 
@@ -357,7 +359,7 @@ namespace DBHelper
             CREATE VIEW OneHourKRWDatas AS
             select A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
             A.Price * B.Price as krw from onehourdatas A
-            INNER JOIN (SELECT * from exchangeinfo where stand_currency==""KRW"") B
+            INNER JOIN (SELECT * from exchangeinfo where stand_currency=='KRW') B
             ON A.stand_coin=B.target_Currency
             GROUP BY A.target_coin, A.stand_Coin, A.marketname;
 
@@ -365,7 +367,7 @@ namespace DBHelper
             CREATE VIEW OneDayKRWDatas AS
             SELECT A.Date as CoinDate, max(B.Date) as ExchangeDate, A.Target_Coin, A.Stand_Coin, A.Price, A.marketname,
             A.Price * B.Price as krw FROM OneDayDatas A
-            INNER JOIN (SELECT * from exchangeinfo where stand_currency==""KRW"") B
+            INNER JOIN (SELECT * from exchangeinfo where stand_currency=='KRW') B
             ON A.stand_coin=B.target_Currency
             GROUP BY A.target_coin, A.stand_Coin, A.marketname;
 
@@ -375,16 +377,17 @@ namespace DBHelper
             Max.Nation AS MaxNation, Max.MarketName AS MaxMarketName, Min.Nation AS MinNation, Min.MarketName AS MinMarketName,
             Max.KRW AS MaxPrice, Min.KRW AS MinPrice, 100 - (Min.KRW / Max.KRW * 100) AS Percent
             FROM MinKRWList Min INNER JOIN MaxKRWList Max
-            ON Min.Target_Coin=MAX.Target_Coin AND Min.MarketName!=Max.MarketName;
+            ON Min.Target_Coin=MAX.Target_Coin AND Min.MarketName!=Max.MarketName
+            WHERE Percent > 0;
 
             DROP VIEW IF EXISTS CurrencyExchangeWithTrends;
             CREATE VIEW CurrencyExchangeWithTrends AS
             SELECT A.Date as date, A.Target_Coin, A.MaxStand_Coin, A.MinStand_Coin, A.MaxNation, A.MaxMarketName,
             A.MinNation, A.MinMarketName, A.MaxPrice, A.MinPrice, A.Percent,
-            case when B1.krw > 0 and B2.krw > 0 then (100 - B2.krw / B1.krw * 100) - A.Percent else null end AS OneMin,
-            case when C1.krw > 0 and C2.krw > 0 then (100 - C2.krw / C1.krw * 100) - A.Percent else null end AS FiveMin,
-            case when D1.krw > 0 and D2.krw > 0 then (100 - D2.krw / D1.krw * 100) - A.Percent else null end AS OneHour,
-            case when E1.krw > 0 and E2.krw > 0 then (100 - E2.krw / E1.krw * 100) - A.Percent else null end AS OneDay
+            case when B1.krw > 0 and B2.krw > 0 then A.Percent - (100 - (B2.krw / B1.krw * 100)) else null end AS OneMin,
+            case when C1.krw > 0 and C2.krw > 0 then A.Percent - (100 - (C2.krw / C1.krw * 100)) else null end AS FiveMin,
+            case when D1.krw > 0 and D2.krw > 0 then A.Percent - (100 - (D2.krw / D1.krw * 100)) else null end AS OneHour,
+            case when E1.krw > 0 and E2.krw > 0 then A.Percent - (100 - (E2.krw / E1.krw * 100)) else null end AS OneDay
             FROM currencyexchange A
             left join OneMinkrwDatas B1 on A.target_coin=B1.target_coin and A.MaxStand_Coin=B1.stand_coin and A.MaxMarketName=B1.MarketName
             left join OneMinkrwDatas B2 on A.target_coin=B2.target_coin and A.MinStand_Coin=B2.stand_coin and A.MinMarketName=B2.MarketName
@@ -395,7 +398,7 @@ namespace DBHelper
             left join OneDaykrwDatas E1 on A.target_coin=E1.target_coin and A.MaxStand_Coin=E1.stand_coin and A.MaxMarketName=E1.MarketName
             left join OneDaykrwDatas E2 on A.target_coin=E2.target_coin and A.MinStand_Coin=E2.stand_coin and A.MinMarketName=E2.MarketName;
 
-            INSERT OR REPLACE INTO ExchangeInfo VALUES (""2021-05-20 00:00:00"", ""KRW"", ""KRW"", 1);
+            INSERT OR REPLACE INTO ExchangeInfo VALUES ('9999-12-31 23:59:59', 'KRW', 'KRW', 1);
             ";
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
@@ -449,6 +452,9 @@ namespace DBHelper
 
             string date = model.Date.ToString("yyyy/MM/dd HH:mm:ss");
 
+            if (model.Price == 0)
+                return;
+
             string sql = @"
             INSERT INTO MarketDetail "
             + "VALUES ("
@@ -469,6 +475,9 @@ namespace DBHelper
                 return;
 
             string date = model.Date.ToString("yyyy/MM/dd HH:mm:ss");
+
+            if (model.Price == 0)
+                return;
 
             string sql = @"
             INSERT INTO ExchangeInfo "
@@ -728,10 +737,15 @@ namespace DBHelper
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
 
-            try
-            { int result = TryExecuteNonQuery(command); }
-            catch(SQLiteException sqe)
-            { if(sqe.ErrorCode != 19) throw sqe; }
+            new Thread(new ParameterizedThreadStart((tcommand) =>
+            {
+                SQLiteCommand ccomand = (SQLiteCommand)tcommand;
+                try
+                { int result = TryExecuteNonQuery(ccomand); }
+                catch (SQLiteException sqe)
+                { if (sqe.ErrorCode != 19) throw sqe; }
+            })).Start(command);
+            
         }
 
         public void SubBan(int Type, string Name)
@@ -743,10 +757,14 @@ namespace DBHelper
 
             SQLiteCommand command = new SQLiteCommand(sql, conn);
 
-            try
-            { int result = TryExecuteNonQuery(command); }
-            catch (SQLiteException sqe)
-            { var sq = sqe.ErrorCode; }
+            new Thread(new ParameterizedThreadStart((tcommand) =>
+            {
+                SQLiteCommand ccomand = (SQLiteCommand)tcommand;
+                try
+                { int result = TryExecuteNonQuery(ccomand); }
+                catch (SQLiteException sqe)
+                { if (sqe.ErrorCode != 19) throw sqe; }
+            })).Start(command);
         }
 
         public List<BlackListModel> SelectBlackList()
@@ -785,8 +803,16 @@ namespace DBHelper
             while (true)
             {
                 string sql = @"
-                    DELETE FROM MarketDetail WHERE Date < datetime('now', 'localtime', '-35 hour');
-                    DELETE FROM ExchangeInfo WHERE Date < datetime('now', 'localtime', '-35 hour');
+                    DELETE FROM MarketDetail WHERE Date < datetime('now', 'localtime', '-40 hour');
+                    DELETE FROM ExchangeInfo WHERE Date < datetime('now', 'localtime', '-40 hour');
+
+                    DELETE FROM MarketDetail WHERE
+                    Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour') AND STRFTIME('%H', Date) LIKE '%2'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%4'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%6'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%8'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%8'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%0';
                 ";
 
                 SQLiteCommand command = new SQLiteCommand(sql, conn);

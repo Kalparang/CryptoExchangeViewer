@@ -26,7 +26,15 @@ namespace CryptoExchangeViewer
         {
             InitializeComponent();
 
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             Init.Init init = new Init.Init();
+        }
+
+        private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = (Exception)e.ExceptionObject;
+            MessageBox.Show(ex.Message, "UnhandledException");
         }
     }
 }
