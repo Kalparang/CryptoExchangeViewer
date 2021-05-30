@@ -803,16 +803,16 @@ namespace DBHelper
             while (true)
             {
                 string sql = @"
-                    DELETE FROM MarketDetail WHERE Date < datetime('now', 'localtime', '-40 hour');
-                    DELETE FROM ExchangeInfo WHERE Date < datetime('now', 'localtime', '-40 hour');
+                    DELETE FROM MarketDetail WHERE Date < datetime('now', 'localtime', '-34 hour');
+                    DELETE FROM ExchangeInfo WHERE Date < datetime('now', 'localtime', '-34 hour');
 
                     DELETE FROM MarketDetail WHERE
-                    Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour') AND STRFTIME('%H', Date) LIKE '%2'
-                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%4'
-                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%6'
-                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%8'
-                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%8'
-                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-30 hour')  AND STRFTIME('%H', Date) LIKE '%0';
+                    Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-33 hour') AND STRFTIME('%H', Date) LIKE '%2'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-33 hour')  AND STRFTIME('%H', Date) LIKE '%4'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-33 hour')  AND STRFTIME('%H', Date) LIKE '%6'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-33 hour')  AND STRFTIME('%H', Date) LIKE '%8'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-33 hour')  AND STRFTIME('%H', Date) LIKE '%8'
+                    AND Date < datetime('now', 'localtime', '-11 hour') AND Date > datetime('now', 'localtime', '-33 hour')  AND STRFTIME('%H', Date) LIKE '%0';
                 ";
 
                 SQLiteCommand command = new SQLiteCommand(sql, conn);
