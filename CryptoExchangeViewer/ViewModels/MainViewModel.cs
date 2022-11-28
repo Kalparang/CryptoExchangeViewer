@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using System.Windows.Controls;
 using System.Windows.Input;
 using CryptoExchangeViewer.MVVM;
@@ -17,6 +18,8 @@ namespace CryptoExchangeViewer.ViewModels
     {
         private DBHelper.DBHelper db;
         CancellationTokenSource SelectedToken;
+        EventWaitHandle exitHandle =
+            new EventWaitHandle(false, EventResetMode.ManualReset);
 
         //메인뷰에서 암호화폐-암호화폐 Grid의 뷰모델
         private ObservableCollection<CurrencyViewModel> cryptoDetail;
@@ -167,7 +170,8 @@ namespace CryptoExchangeViewer.ViewModels
 
         public MainViewModel()
         {
-            db = new DBHelper.DBHelper();
+            db = new DBHelper.DBHelper(exitHandle);
+            Application.Current.Exit += Current_Exit;
 
             CryptoDetail = new ObservableCollection<CurrencyViewModel>();
             CurrencyDetail = new ObservableCollection<CurrencyViewModel>();
@@ -401,8 +405,14 @@ namespace CryptoExchangeViewer.ViewModels
 
                 ExchangeList = tempList;
 
-                //System.Threading.Thread.Sleep(3000);
+                if (exitHandle.WaitOne(3000) == true)
+                    break;
             }
+        }
+
+        private void Current_Exit(object sender, ExitEventArgs e)
+        {
+            exitHandle.Set();
         }
     }
 }

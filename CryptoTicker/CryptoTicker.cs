@@ -79,6 +79,8 @@ namespace CryptoTicker
                 ws.OnClose += (sender, e) =>
                 {
                     var t = e.Code;
+                    ws.Close();
+                    ws.Connect();
                 };
 
                 ws.OnMessage += (sender, e) =>
@@ -180,7 +182,6 @@ namespace CryptoTicker
 
         void onConnect()
         {
-
         }
 
         void onReceive(Ticker ticker)
@@ -330,53 +331,48 @@ namespace CryptoTicker
             List<CurrencyExchangeModel> Models = new List<CurrencyExchangeModel>();
             date = new DateTime();
 
-            string url = "https://earthquake.kr:23490/query/";
+            string url = "https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRW";
 
             foreach(string currency in CurrencyList)
             {
-                url += currency + "KRW" + ",";
-                url += "KRW" + currency + ",";
-            }
+                string currenurl = url + currency;
 
-            url = url.Substring(0, url.Length - 1);
+                string responseText = string.Empty;
 
-            string responseText = string.Empty;
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(currenurl);
+                request.Method = "GET";
+                request.Timeout = 5 * 1000;
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "GET";
-            request.Timeout = 5 * 1000;
-
-            using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
-            {
-                HttpStatusCode status = resp.StatusCode;
-                Console.WriteLine(status);
-
-                Stream respStream = resp.GetResponseStream();
-                using (StreamReader sr = new StreamReader(respStream))
+                using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
                 {
-                    responseText = sr.ReadToEnd();
+                    HttpStatusCode status = resp.StatusCode;
+                    Console.WriteLine(status);
+
+                    Stream respStream = resp.GetResponseStream();
+                    using (StreamReader sr = new StreamReader(respStream))
+                    {
+                        responseText = sr.ReadToEnd();
+                    }
                 }
-            }
 
-            dynamic cu = JsonConvert.DeserializeObject<dynamic>(responseText);
+                dynamic cu = JsonConvert.DeserializeObject<dynamic>(responseText);
 
-            foreach (dynamic c in cu)
-            {
-                string name = c.Name;
-
-                if (name == "update")
+                foreach (dynamic c in cu)
                 {
-                    long TimeStamp = c.Value;
+                    long TimeStamp = c.timestamp;
 
                     date = new DateTime(1970, 1, 1, 0, 0, 0, 0).AddMilliseconds(TimeStamp);
-                }
-                else
-                {
-                    string Target = name.Substring(0, 3);
-                    string Stand = name.Substring(3);
-                    decimal Price = c.Value[0];
-                    decimal High = c.Value[5];
-                    decimal Low = c.Value[6];
+                    date = date.ToLocalTime();
+
+                    string code = c.code;
+                    code = code.Split('.')[1];
+
+                    string Target = code.Substring(3);
+                    string Stand = code.Substring(0, 3);
+                    decimal currencyUnit = c.currencyUnit;
+                    decimal Price = c.basePrice / currencyUnit;
+                    decimal High = c.highPrice;
+                    decimal Low = c.lowPrice;
 
                     Models.Add(new CurrencyExchangeModel(date, Target, Stand, Price, High, Low));
                 }

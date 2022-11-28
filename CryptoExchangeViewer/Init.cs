@@ -30,10 +30,14 @@ namespace CryptoExchangeViewer.Init
         private CryptoTicker.Bittrex bittrex = null;
         private CryptoTicker.Binance binance = null;
         private DBHelper.DBHelper db = null;
+        private EventWaitHandle exitHandle;
 
-        public Init()
+        public Init(EventWaitHandle exitHandle)
         {
+            this.exitHandle = exitHandle;
+
             DBInit();
+            CurrencyExchangeInit();
 
             new Thread(KorbitInit).Start();
             new Thread(HuobiInit).Start();
@@ -41,12 +45,12 @@ namespace CryptoExchangeViewer.Init
             new Thread(BitFlyerInit).Start();
             new Thread(BittrexInit).Start();
             new Thread(BinanceInit).Start();
-            new Thread(CurrencyExchangeInit).Start();
+            //new Thread(CurrencyExchangeInit).Start();
         }
 
         private void DBInit()
         {
-            db = new DBHelper.DBHelper();
+            db = new DBHelper.DBHelper(exitHandle);
         }
 
         private void KorbitSocketFunc(dynamic Tickers)
@@ -405,7 +409,7 @@ namespace CryptoExchangeViewer.Init
             DateTime date;
             string[] CurrencyList = { "USD", "EUR", "JPY", "CNY", "HKD" };
 
-            while (true)
+            //while (true)
             {
                 List<CurrencyExchangeModel> models =
                     Currency.Exchange(out date, CurrencyList);
@@ -417,9 +421,7 @@ namespace CryptoExchangeViewer.Init
 
                     db.InputExchangeData(exmodel);
                 }
-
-                System.Threading.Thread.Sleep(60 * 1000);
-            }
+            } ;
         }
     }
 }

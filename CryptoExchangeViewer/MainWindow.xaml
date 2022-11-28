@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CryptoExchangeViewer" xmlns:viewmodels="clr-namespace:CryptoExchangeViewer.ViewModels" xmlns:controls="clr-namespace:CryptoExchangeViewer.UserControls" d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
         mc:Ignorable="d"
-        Title="CryptoExchangeViewr" Height="450" Width="1112.583">
+        Title="CryptoExchangeViewer" Height="450" Width="1112.583"
+        Closing="Window_Closing"
+        >
     <Window.DataContext>
         <viewmodels:MainViewModel/>
     </Window.DataContext>

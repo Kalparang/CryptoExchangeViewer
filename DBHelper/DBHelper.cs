@@ -12,7 +12,8 @@ namespace DBHelper
     public class DBHelper
     {
         SQLiteConnection conn;
-
+        EventWaitHandle exitHandle;
+        
         private Dictionary<string, CryptoExchangeModel> coinList;
         public class MarketInputModel
         {
@@ -162,8 +163,10 @@ namespace DBHelper
             public decimal Price;
         }
 
-        public DBHelper()
+        public DBHelper(EventWaitHandle exitHandle)
         {
+            this.exitHandle = exitHandle;
+
             coinList = new Dictionary<string, CryptoExchangeModel>();
 
             string DBLocation = Environment.CurrentDirectory + @"\CryptoExchange.sqlite";
@@ -809,7 +812,8 @@ namespace DBHelper
                 SQLiteCommand command = new SQLiteCommand(sql, conn);
                 int result = TryExecuteNonQuery(command);
 
-                Thread.Sleep(1000 * 60 * 60);
+                if (exitHandle.WaitOne(1000 * 60 * 60) == true)
+                    break;
             }
         }
     }
